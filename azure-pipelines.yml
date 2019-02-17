@@ -45,10 +45,10 @@ jobs:
     condition: succeededOrFailed()
 
   - task: PublishCodeCoverageResults@1
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
     condition: succeededOrFailed()
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
 
 - job: 'Publish'
   dependsOn: 'Test'
