@@ -1,5 +1,5 @@
 import pathlib
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # The directory containing this file
 here = pathlib.Path(__file__).parent
@@ -12,10 +12,10 @@ license = (here / "LICENSE").read_text()
 setup(
     name="chemmltoolkit",
     version="0.1.0",
-    description="A set of useful Python functionality for machine learning in chemistry",
+    description="Useful functionality for machine learning in chemistry",
     long_description=readme,
     long_description_content_type="text/markdown",
-    license = license,
+    license=license,
     url="https://github.com/Andy-Wilkinson/ChemMLToolkit",
     author="Andrew Wilkinson",
     packages=find_packages(exclude=('tests', 'docs')),
