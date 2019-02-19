@@ -1,5 +1,6 @@
 import pathlib
 from setuptools import setup, find_packages
+from chemmltoolkit.__version__ import __version__
 
 # The directory containing this file
 here = pathlib.Path(__file__).parent
@@ -11,7 +12,7 @@ license = (here / "LICENSE").read_text()
 # This call to setup() does all the work
 setup(
     name="chemmltoolkit",
-    version="0.1.0",
+    version=__version__,
     description="Useful functionality for machine learning in chemistry",
     long_description=readme,
     long_description_content_type="text/markdown",

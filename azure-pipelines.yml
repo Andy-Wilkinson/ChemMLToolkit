@@ -63,6 +63,9 @@ jobs:
   - script: python -m pip install --upgrade pip && pip install -r requirements.txt
     displayName: 'Install development dependencies'
 
+  - script: sed 's/"\n/.dev$(Build.BuildNumber)"\n/g' chemmltoolkit/__version__.py
+    displayName: 'Update version string'
+
   - script: python setup.py sdist bdist_wheel
     displayName: 'Build project'
 
