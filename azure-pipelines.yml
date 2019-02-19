@@ -65,3 +65,12 @@ jobs:
 
   - script: python setup.py sdist bdist_wheel
     displayName: 'Build project'
+
+  - task: TwineAuthenticate@0
+    inputs:
+      artifactFeeds: 'ChemML'
+    displayName: Add twine credentials
+
+  - script: |
+      twine upload -r ChemML --config-file $(PYPIRC_PATH) dist/*
+    displayName: Publish to Azure Artifacts
