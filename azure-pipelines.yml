@@ -79,5 +79,5 @@ jobs:
 
   - script: |
       twine upload -r ChemMLToolkit --config-file $(PYPIRC_PATH) dist/*
-#      twine upload -r PyPi-Upload --config-file $(PYPIRC_PATH) dist/*
+      twine upload -r PyPi-Upload --config-file $(PYPIRC_PATH) dist/*
     displayName: Publish to Azure Artifacts
