@@ -3,6 +3,8 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
+name: $(BuildID)
+
 trigger:
 - master
 
@@ -71,9 +73,11 @@ jobs:
 
   - task: TwineAuthenticate@0
     inputs:
-      artifactFeeds: 'ChemML'
+      artifactFeeds: 'ChemMLToolkit'
+      externalFeeds: 'PyPi-Upload'
     displayName: Add twine credentials
 
   - script: |
-      twine upload -r ChemML --config-file $(PYPIRC_PATH) dist/*
+      twine upload -r ChemMLToolkit --config-file $(PYPIRC_PATH) dist/*
+#      twine upload -r PyPi-Upload --config-file $(PYPIRC_PATH) dist/*
     displayName: Publish to Azure Artifacts
