@@ -1,10 +1,11 @@
 import os
 import shutil
 import urllib3
+import certifi
 import tarfile
 import zipfile
 
-http = urllib3.PoolManager()
+http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 
 
 def get_file(filename,
