@@ -29,7 +29,7 @@ def install_rdkit():
         rdkit_package_dir = extract_all(rdkit_package_archive)
 
         # Copy the libraries to the relevant locations
-        # NB: On Colab these are to '/usr/local/lib/python3.6/dist-packages/rdkit'
+        # NB: On Colab to '/usr/local/lib/python3.6/dist-packages/rdkit'
 
         distpackages_dir = site.getsitepackages()[0]
 
