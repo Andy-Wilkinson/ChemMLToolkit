@@ -1,4 +1,5 @@
 import os
+import site
 import glob
 import shutil
 import importlib
@@ -28,10 +29,13 @@ def install_rdkit():
         rdkit_package_dir = extract_all(rdkit_package_archive)
 
         # Copy the libraries to the relevant locations
+        # NB: On Colab these are to '/usr/local/lib/python3.6/dist-packages/rdkit'
+
+        distpackages_dir = site.getsitepackages()[0]
 
         shutil.copytree(os.path.join(rdkit_package_dir,
                                      'lib/python3.6/site-packages/rdkit'),
-                        '/usr/local/lib/python3.6/dist-packages/rdkit')
+                        os.path.joint(distpackages_dir, 'rdkit'))
 
         so_files = glob.glob(os.path.join(rdkit_package_dir, 'lib/*.so.*'))
         for filename in so_files:
