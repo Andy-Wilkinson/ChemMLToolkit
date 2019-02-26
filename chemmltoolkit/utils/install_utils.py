@@ -35,7 +35,7 @@ def install_rdkit():
 
         shutil.copytree(os.path.join(rdkit_package_dir,
                                      'lib/python3.6/site-packages/rdkit'),
-                        os.path.joint(distpackages_dir, 'rdkit'))
+                        os.path.join(distpackages_dir, 'rdkit'))
 
         so_files = glob.glob(os.path.join(rdkit_package_dir, 'lib/*.so.*'))
         for filename in so_files:
