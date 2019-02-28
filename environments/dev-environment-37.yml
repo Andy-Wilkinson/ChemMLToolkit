@@ -1,0 +1,13 @@
+# A conda environment file for building and testing the ChemMLToolkit
+
+name: dev-environment
+channels:
+  - rdkit
+dependencies:
+  - python=3.7
+  - pandas
+  - flake8
+  - pytest
+  - pytest-cov
+  - wheel
+  - twine
