@@ -1,7 +1,6 @@
-import pytest
 import pandas as pd
 from rdkit.Chem import PandasTools
-import chemmltoolkit.processing.pandas
+import chemmltoolkit.processing.pandas #noqa
 
 
 class TestPandas(object):
