@@ -41,6 +41,12 @@ def install_rdkit():
         for filename in so_files:
             shutil.copy(filename, '/usr/lib/x86_64-linux-gnu/')
 
+        os.mkdir('/opt/anaconda1anaconda2anaconda3')
+        os.mkdir('/opt/anaconda1anaconda2anaconda3/share')
+
+        shutil.copytree(os.path.join(rdkit_package_dir, 'share/rdkit'),
+                        '/opt/anaconda1anaconda2anaconda3/share/rdkit')
+
         # Create a symbolic link for the libboost_python library as rdkit is
         # compiled with a slightly different naming system in Google Colab
 
