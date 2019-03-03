@@ -1,4 +1,4 @@
-from rdkit.Chem import Mol, MolFromSmiles, MolToSmiles
+from rdkit.Chem import Mol, MolFromSmiles, MolToSmiles, SanitizeMol
 from rdkit.Chem.AllChem import ReactionFromSmarts
 from rdkit.Chem.MolStandardize import rdMolStandardize
 
@@ -58,6 +58,8 @@ class MolCleaner(object):
     def _apply_reaction(self, mol, reaction):
         products = reaction.RunReactants((mol,))
         if products:
-            return products[0][0]
+            mol = products[0][0]
+            SanitizeMol(mol)
+            return mol
         else:
             return mol
