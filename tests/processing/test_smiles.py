@@ -69,3 +69,94 @@ class TestSmiles(object):
             + self.tokens_control \
             + ['1', '2', '3', '4', '5', '6', '7', '8', '9']
         assert token_list == expected
+
+
+class TestSmilesSmilesTokeniser(object):
+    @pytest.mark.parametrize("smiles_str,tokens", [
+        ('CCCN', [1, 1, 1, 2]),  # Simple example
+        ('C=C', [1, 9, 1]),  # Bond characters
+        ('CN(C)C', [1, 2, 7, 1, 8, 1]),  # Braces
+        ('ClCCBr', [4, 1, 1, 5]),  # Two-character atoms
+        ('O[Pt]O', [3, 6, 3]),  # [xxx] atoms
+        ('C1CC1', [1, 10, 1, 1, 10]),  # Ring numbering (<=9)
+        ('C%10CC%10', [1, 13, 1, 1, 13]),  # Ring numbering (>9)
+    ])
+    def test_tokenise_smiles_all_tokens(self, smiles_str, tokens):
+        token_list = ['?', 'C', 'N', 'O', 'Cl', 'Br', '[Pt]',
+                      '(', ')', '=', '1', '2', '3', '%10']
+
+        tokeniser = smiles.SmilesTokeniser(token_list)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,tokens", [
+        ('CCCN', [1, 1, 1, 2]),  # Simple example
+        ('C=C', [1, 12, 1]),  # Bond characters
+        ('CN(C)C', [1, 2, 10, 1, 11, 1]),  # Braces
+        ('ClCCBr', [4, 1, 1, 5]),  # Two-character atoms
+        ('O[Pt]O', [3, 6, 7, 8, 9, 3]),  # [xxx] atoms
+        ('C1CC1', [1, 13, 1, 1, 13]),  # Ring numbering (<=9)
+        ('C%10CC%10', [1, 16, 13, 17, 1, 1, 16, 13, 17]),  # Ring number (>9)
+    ])
+    def test_tokenise_smiles_halogens_only(self, smiles_str, tokens):
+        token_list = ['?', 'C', 'N', 'O', 'Cl', 'Br', '[', 'P', 't', ']',
+                      '(', ')', '=', '1', '2', '3', '%', '0']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           splitting_method='halogens_only')
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,tokens", [
+        ('CCCN', [1, 1, 1, 2]),  # Simple example
+        ('C=C', [1, 12, 1]),  # Bond characters
+        ('CN(C)C', [1, 2, 10, 1, 11, 1]),  # Braces
+        ('ClCCBr', [1, 4, 1, 1, 5, 18]),  # Two-character atoms
+        ('O[Pt]O', [3, 6, 7, 8, 9, 3]),  # [xxx] atoms
+        ('C1CC1', [1, 13, 1, 1, 13]),  # Ring numbering (<=9)
+        ('C%10CC%10', [1, 16, 13, 17, 1, 1, 16, 13, 17]),  # Ring number (>9)
+    ])
+    def test_tokenise_smiles_characters(self, smiles_str, tokens):
+        token_list = ['?', 'C', 'N', 'O', 'l', 'B', '[', 'P', 't', ']',
+                      '(', ')', '=', '1', '2', '3', '%', '0', 'r']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           splitting_method='characters')
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,split,placeholder,tokens", [
+        ('SBr[Pt]SC', 'all_tokens', '?', [4, 1, 5, 4, 0]),
+        ('SBr[Pt]SC', 'all_tokens', None, None),
+        ('SBr[Pt]SC', 'halogens_only', '?', [4, 1, 6, 7, 8, 9, 4, 0]),
+        ('SBr[Pt]SC', 'halogens_only', None, None),
+        ('SBr[Pt]SC', 'characters', '?', [4, 2, 3, 6, 7, 8, 9, 4, 0]),
+        ('SBr[Pt]SC', 'characters', None, None),
+    ])
+    def test_tokenise_smiles_with_unknown_placeholder(self, smiles_str, split,
+                                                      placeholder, tokens):
+        token_list = ['C', 'Br', 'B', 'r', '?', '[Pt]', '[', 'P', 't', ']']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           splitting_method=split,
+                                           unknown_placeholder=placeholder)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,tokens", [
+        ('CCCN', [1, 1, 1, 2]),  # Simple example
+        ('C=C', [1, 9, 1]),  # Bond characters
+        ('CN(C)C', [1, 2, 7, 1, 8, 1]),  # Braces
+        ('ClCCBr', [4, 1, 1, 5]),  # Two-character atoms
+        ('O[Pt]O', [3, 6, 3]),  # [xxx] atoms
+        ('C1CC1', [1, 10, 1, 1, 10]),  # Ring numbering (<=9)
+        ('C%10CC%10', [1, 13, 1, 1, 13]),  # Ring numbering (>9)
+        ('?=C=?', [0, 9, 1, 9, 0]),  # Unknown tokens
+    ])
+    def test_untokenise_smiles(self, smiles_str, tokens):
+        token_list = ['?', 'C', 'N', 'O', 'Cl', 'Br', '[Pt]',
+                      '(', ')', '=', '1', '2', '3', '%10']
+
+        tokeniser = smiles.SmilesTokeniser(token_list)
+        smiles_result = tokeniser.untokenise_smiles(tokens)
+        assert smiles_result == smiles_str
