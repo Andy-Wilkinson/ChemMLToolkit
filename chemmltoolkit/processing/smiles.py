@@ -121,6 +121,13 @@ class SmilesTokeniser(object):
         elif splitting_method == 'characters':
             self._split_function = list
 
+    @property
+    def missing_tokens(self):
+        """Returns a set containing any SMILES tokens that have not been
+        found in the supplied tokens list.
+        """
+        return self._tokens_missing
+
     def tokenise_smiles(self, smiles: str) -> list:
         """Tokenises the specified SMILES string.
 

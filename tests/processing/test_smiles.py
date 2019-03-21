@@ -126,12 +126,12 @@ class TestSmilesSmilesTokeniser(object):
         assert tokens_result == tokens
 
     @pytest.mark.parametrize("smiles_str,split,placeholder,tokens", [
-        ('SBr[Pt]SC', 'all_tokens', '?', [4, 1, 5, 4, 0]),
-        ('SBr[Pt]SC', 'all_tokens', None, None),
-        ('SBr[Pt]SC', 'halogens_only', '?', [4, 1, 6, 7, 8, 9, 4, 0]),
-        ('SBr[Pt]SC', 'halogens_only', None, None),
-        ('SBr[Pt]SC', 'characters', '?', [4, 2, 3, 6, 7, 8, 9, 4, 0]),
-        ('SBr[Pt]SC', 'characters', None, None),
+        ('SBr[Pt]NC', 'all_tokens', '?', [4, 1, 5, 4, 0]),
+        ('SBr[Pt]NC', 'all_tokens', None, None),
+        ('SBr[Pt]NC', 'halogens_only', '?', [4, 1, 6, 7, 8, 9, 4, 0]),
+        ('SBr[Pt]NC', 'halogens_only', None, None),
+        ('SBr[Pt]NC', 'characters', '?', [4, 2, 3, 6, 7, 8, 9, 4, 0]),
+        ('SBr[Pt]NC', 'characters', None, None),
     ])
     def test_tokenise_smiles_with_unknown_placeholder(self, smiles_str, split,
                                                       placeholder, tokens):
@@ -142,6 +142,7 @@ class TestSmilesSmilesTokeniser(object):
                                            unknown_placeholder=placeholder)
         tokens_result = tokeniser.tokenise_smiles(smiles_str)
         assert tokens_result == tokens
+        assert tokeniser.missing_tokens == {'S', 'N'}
 
     @pytest.mark.parametrize("smiles_str,tokens", [
         ('CCCN', [1, 1, 1, 2]),  # Simple example
