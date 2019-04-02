@@ -93,7 +93,8 @@ class SmilesTokeniser(object):
     def __init__(self,
                  tokens: list,
                  splitting_method: str = 'all_tokens',
-                 unknown_placeholder: str = None):
+                 unknown_placeholder: str = None,
+                 simplify_rings: bool = False):
         """Tokeniser to convert SMILES strings to and from tokenised format.
 
         Before tokenising, the SMILES string is split into its constituent
@@ -107,12 +108,15 @@ class SmilesTokeniser(object):
             splitting_method: The technique for splitting the SMILES string.
             unknown_placeholder: The token to use for unidentified tokens, or
                 None if SMILES string with unknown tokens should be rejected.
+            simplify_rings: Will re-use ring number tokens where possible.
         """
         self._tokens_list = tokens
         self._tokens_missing = set()
         self._token_unknown = tokens.index(unknown_placeholder)\
             if unknown_placeholder else None
         self._token_lookup = {t: i for i, t in enumerate(tokens)}
+        self._splitting_method = splitting_method
+        self._simplify_rings = simplify_rings
 
         if splitting_method == 'all_tokens':
             self._split_function = split_smiles
@@ -143,7 +147,24 @@ class SmilesTokeniser(object):
         Returns:
             A list of integer tokens.
         """
+
+        # If we are not splitting by 'all_tokens' and ring numbering is greater
+        # than 9 (i.e. %xx numbering) fallback to pre-simplifying ring with
+        # 'all_tokens' first, then use the desired splitting method
+        preprocess_ring_simplification = self._simplify_rings \
+            and self._splitting_method != 'all_tokens' \
+            and '%' in smiles
+
+        if preprocess_ring_simplification:
+            components = split_smiles(smiles)
+            components = self._ring_simplifier(components)
+            smiles = ''.join(components)
+
         components = self._split_function(smiles)
+
+        if self._simplify_rings and not preprocess_ring_simplification:
+            components = self._ring_simplifier(components)
+
         smiles_tokens = [self._get_token(c) for c in components]
 
         if None in smiles_tokens:
@@ -174,3 +195,26 @@ class SmilesTokeniser(object):
         else:
             self._tokens_missing.add(val)
             return self._token_unknown
+
+    def _ring_simplifier(self, components):
+        ring_rename_dictionary = {}
+        num_tokens = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '%']
+
+        def get_next_id():
+            for id in range(1, 100):
+                id_str = str(id) if id < 10 else '%' + str(id)
+                if id_str not in ring_rename_dictionary:
+                    return id_str
+
+        def simplify_component(component):
+            if component[0] in num_tokens:
+                if component not in ring_rename_dictionary:
+                    new_id = get_next_id()
+                    ring_rename_dictionary[component] = new_id
+                    return new_id
+                else:
+                    return ring_rename_dictionary.pop(component)
+            else:
+                return component
+
+        return [simplify_component(c) for c in components]

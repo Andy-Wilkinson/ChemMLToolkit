@@ -144,6 +144,38 @@ class TestSmilesSmilesTokeniser(object):
         assert tokens_result == tokens
         assert tokeniser.missing_tokens == {'S', 'N'}
 
+    @pytest.mark.parametrize("smiles_str,split,tokens", [
+        ('C3CC3', 'all_tokens', [1, 2, 1, 1, 2]),
+        ('C%12CC%12', 'all_tokens', [1, 2, 1, 1, 2]),
+        ('C1CC1C2CC2', 'all_tokens', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC1C%12CC%12', 'all_tokens', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC2C1CC2', 'all_tokens', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+        ('C1CC%12C1CC%12', 'all_tokens', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+
+        ('C3CC3', 'halogens_only', [1, 2, 1, 1, 2]),
+        ('C%12CC%12', 'halogens_only', [1, 2, 1, 1, 2]),
+        ('C1CC1C2CC2', 'halogens_only', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC1C%12CC%12', 'halogens_only', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC2C1CC2', 'halogens_only', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+        ('C1CC%12C1CC%12', 'halogens_only', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+
+        ('C3CC3', 'characters', [1, 2, 1, 1, 2]),
+        ('C%12CC%12', 'characters', [1, 2, 1, 1, 2]),
+        ('C1CC1C2CC2', 'characters', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC1C%12CC%12', 'characters', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC2C1CC2', 'characters', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+        ('C1CC%12C1CC%12', 'characters', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+    ])
+    def test_tokenise_smiles_with_simplify_rings(self, smiles_str, split,
+                                                 tokens):
+        token_list = ['?', 'C', '1', '2', '3']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           splitting_method=split,
+                                           simplify_rings=True)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
     @pytest.mark.parametrize("smiles_str,tokens", [
         ('CCCN', [1, 1, 1, 2]),  # Simple example
         ('C=C', [1, 9, 1]),  # Bond characters
