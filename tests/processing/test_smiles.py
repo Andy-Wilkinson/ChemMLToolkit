@@ -152,13 +152,6 @@ class TestSmilesSmilesTokeniser(object):
         ('C1CC2C1CC2', 'all_tokens', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
         ('C1CC%12C1CC%12', 'all_tokens', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
 
-        ('C3CC3', 'halogens_only', [1, 2, 1, 1, 2]),
-        ('C%12CC%12', 'halogens_only', [1, 2, 1, 1, 2]),
-        ('C1CC1C2CC2', 'halogens_only', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
-        ('C1CC1C%12CC%12', 'halogens_only', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
-        ('C1CC2C1CC2', 'halogens_only', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
-        ('C1CC%12C1CC%12', 'halogens_only', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
-
         ('C3CC3', 'characters', [1, 2, 1, 1, 2]),
         ('C%12CC%12', 'characters', [1, 2, 1, 1, 2]),
         ('C1CC1C2CC2', 'characters', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
@@ -191,5 +184,34 @@ class TestSmilesSmilesTokeniser(object):
                       '(', ')', '=', '1', '2', '3', '%10']
 
         tokeniser = smiles.SmilesTokeniser(token_list)
+        smiles_result = tokeniser.untokenise_smiles(tokens)
+        assert smiles_result == smiles_str
+
+    @pytest.mark.parametrize("smiles_str,split,tokens", [
+        ('C1CC1', 'all_tokens', [1, 2, 1, 1, 2]),
+        ('C1CC1', 'all_tokens', [1, 4, 1, 1, 4]),
+        ('C1CC1C2CC2', 'all_tokens', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC1C2CC2', 'all_tokens', [1, 2, 1, 1, 2, 1, 4, 1, 1, 4]),
+        ('C1CC2C1CC2', 'all_tokens', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+        ('C1CC2C1CC2', 'all_tokens', [1, 2, 1, 1, 4, 1, 2, 1, 1, 4]),
+        ('112233445566778899%10%10%11%11', 'all_tokens', [2] * 22),
+
+        ('C1CC1', 'characters', [1, 2, 1, 1, 2]),
+        ('C1CC1', 'characters', [1, 5, 2, 3, 1, 1, 5, 2, 3]),
+        ('C1CC1C2CC2', 'characters', [1, 2, 1, 1, 2, 1, 2, 1, 1, 2]),
+        ('C1CC1C2CC2', 'characters',
+            [1, 2, 1, 1, 2, 1, 5, 2, 3, 1, 1, 5, 2, 3]),
+        ('C1CC2C1CC2', 'characters', [1, 2, 1, 1, 3, 1, 2, 1, 1, 3]),
+        ('C1CC2C1CC2', 'characters',
+            [1, 2, 1, 1, 5, 2, 3, 1, 2, 1, 1, 5, 2, 3]),
+        ('112233445566778899%10%10%11%11', 'characters', [2] * 22),
+    ])
+    def test_untokenise_smiles_with_simplify_rings(self, smiles_str, split,
+                                                   tokens):
+        token_list = ['?', 'C', '1', '2', '%12', '%']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           splitting_method=split,
+                                           simplify_rings=True)
         smiles_result = tokeniser.untokenise_smiles(tokens)
         assert smiles_result == smiles_str

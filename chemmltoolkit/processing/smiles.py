@@ -185,8 +185,15 @@ class SmilesTokeniser(object):
         Returns:
             The corresponding SMILES string.
         """
-        chars = [self._tokens_list[t] for t in smiles_tokens]
-        return ''.join(chars)
+        components = [self._tokens_list[t] for t in smiles_tokens]
+
+        if self._simplify_rings:
+            # If we aren't using 'all_tokens' then swap to this format
+            if self._splitting_method != 'all_tokens':
+                components = split_smiles(''.join(components))
+            components = self._ring_unsimplifier(components)
+
+        return ''.join(components)
 
     def _get_token(self, val):
         token = self._token_lookup.get(val)
@@ -218,3 +225,23 @@ class SmilesTokeniser(object):
                 return component
 
         return [simplify_component(c) for c in components]
+
+    def _ring_unsimplifier(self, components):
+        ring_rename_dictionary = {}
+        num_tokens = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '%']
+        next_id = 1
+
+        def unsimplify_component(component):
+            nonlocal next_id
+            if component[0] in num_tokens:
+                if component not in ring_rename_dictionary:
+                    id = str(next_id) if next_id < 10 else '%' + str(next_id)
+                    next_id += 1
+                    ring_rename_dictionary[component] = id
+                    return id
+                else:
+                    return ring_rename_dictionary.pop(component)
+            else:
+                return component
+
+        return [unsimplify_component(c) for c in components]
