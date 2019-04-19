@@ -4,7 +4,7 @@ name: dev-environment
 channels:
   - rdkit
 dependencies:
-  - python=3.7
+  - python=3.6
   - pandas
   - rdkit
   - flake8
@@ -12,3 +12,5 @@ dependencies:
   - pytest-cov
   - wheel
   - twine
+  - pip:
+    - tensorflow=2.0.0-alpha
