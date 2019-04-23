@@ -6,7 +6,7 @@ class TestOneHotEncoding(tf.test.TestCase):
     def test_call_simple(self):
         oneHotEncoding = OneHotEncoding(4)
         output = oneHotEncoding([1, 0, 2])
-        self.assertAllEqual(output, [[0, 2, 0, 0],
+        self.assertAllEqual(output, [[0, 1, 0, 0],
                                      [1, 0, 0, 0],
                                      [0, 0, 1, 0]])
 
