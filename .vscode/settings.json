@@ -2,5 +2,6 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.unitTest.pyTestEnabled": true
+    "python.unitTest.pyTestEnabled": true,
+    "python.pythonPath": "C:\\Users\\AndyW\\Miniconda3\\envs\\chemmltoolkit\\python.exe"
 }
