@@ -41,7 +41,12 @@ class OneHotEncoding(tf.keras.layers.Layer):
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
-        output_shape = input_shape + self.depth
+        if self.axis:
+            output_shape = input_shape[:self.axis] + \
+                [self.depth] + \
+                input_shape[self.axis:]
+        else:
+            output_shape = input_shape + [self.depth]
         return tf.TensorShape(output_shape)
 
     def get_config(self):
