@@ -4,7 +4,7 @@ from chemmltoolkit.tensorflow.layers import ShiftTensor
 
 
 class TestShiftTensor(tf.test.TestCase):
-    def test_call_shift_one(self):
+    def test_call_shift_one_3d(self):
         input = [
             [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 2, 3]],
             [[2, 4, 6], [8, 2, 4], [6, 8, 2], [4, 6, 8]],
@@ -12,6 +12,19 @@ class TestShiftTensor(tf.test.TestCase):
         expected_output = [
             [[0, 0, 0], [1, 2, 3], [4, 5, 6], [7, 8, 9]],
             [[0, 0, 0], [2, 4, 6], [8, 2, 4], [6, 8, 2]],
+        ]
+
+        self._test_call(input, expected_output,
+                        distance=1)
+
+    def test_call_shift_one_2d(self):
+        input = [
+            [1, 2, 3, 4],
+            [2, 4, 6, 8],
+        ]
+        expected_output = [
+            [0, 1, 2, 3],
+            [0, 2, 4, 6],
         ]
 
         self._test_call(input, expected_output,

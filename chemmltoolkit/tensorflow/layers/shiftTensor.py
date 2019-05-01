@@ -39,9 +39,9 @@ class ShiftTensor(tf.keras.layers.Layer):
                         constant_values=self.padding_value)
 
         if self.distance > 0:
-            outputs = padded[:, :-self.distance, :]
+            outputs = padded[:, :-self.distance]
         else:
-            outputs = padded[:, -self.distance:, :]
+            outputs = padded[:, -self.distance:]
 
         return outputs
 
