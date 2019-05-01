@@ -90,26 +90,26 @@ def get_token_list(max_ring_number=9, chiral_carbon=True) -> list:
 
 
 class SmilesTokeniser(object):
+    """Tokeniser to convert SMILES strings to and from tokenised format.
+
+    Before tokenising, the SMILES string is split into its constituent
+    components. This can be performed in a number of ways
+        - 'all_tokens' will correctly split all SMILES tokens
+        - 'halogens_only' is character based apart from Cl and Br
+        - 'characters' is entirely character based
+
+    Args:
+        tokens: A list of strings containing the token list to use.
+        splitting_method: The technique for splitting the SMILES string.
+        unknown_placeholder: The token to use for unidentified tokens, or
+            None if SMILES string with unknown tokens should be rejected.
+        simplify_rings: Will re-use ring number tokens where possible.
+    """
     def __init__(self,
                  tokens: list,
                  splitting_method: str = 'all_tokens',
                  unknown_placeholder: str = None,
                  simplify_rings: bool = False):
-        """Tokeniser to convert SMILES strings to and from tokenised format.
-
-        Before tokenising, the SMILES string is split into its constituent
-        components. This can be performed in a number of ways
-            - 'all_tokens' will correctly split all SMILES tokens
-            - 'halogens_only' is character based apart from Cl and Br
-            - 'characters' is entirely character based
-
-        Args:
-            tokens: A list of strings containing the token list to use.
-            splitting_method: The technique for splitting the SMILES string.
-            unknown_placeholder: The token to use for unidentified tokens, or
-                None if SMILES string with unknown tokens should be rejected.
-            simplify_rings: Will re-use ring number tokens where possible.
-        """
         self._tokens_list = tokens
         self._tokens_missing = set()
         self._token_unknown = tokens.index(unknown_placeholder)\
