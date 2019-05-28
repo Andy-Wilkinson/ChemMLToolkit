@@ -52,6 +52,8 @@ class MolCleaner(object):
             The cleaned SMILES.
         """
         mol_input = MolFromSmiles(smiles)
+        if not mol_input:
+            return None
         mol_clean = self.clean_mol(mol_input)
         return MolToSmiles(mol_clean)
 

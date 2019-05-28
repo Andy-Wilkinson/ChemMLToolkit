@@ -69,6 +69,7 @@ class TestMols_MolCleaner(object):
         ('OCCc1[nH]nnn1', 'OCCc1nnn[nH]1'),  # Tetrazoles (keep)
         ('OCCc1nn(C)nn1', 'Cn1nnc(CCO)n1'),  # Me-tetrazoles (keep)
         ('OCCc1n(C)nnn1', 'Cn1nnnc1CCO'),  # Me-tetrazoles (keep)
+        ('c1ccc2c(c1)[i+]c3ccccc23', None),  # RDKit fails to read
     ])
     def test_clean_smiles(self, smiles_input, smiles_clean):
         smiles_result = MolCleaner().clean_smiles(smiles_input)
