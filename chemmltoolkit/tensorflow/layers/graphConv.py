@@ -20,6 +20,9 @@ class GraphConv(Layer):
         activation: Activation function to use.
             If you don't specify anything, RELU activation is applied.
         use_bias: Boolean, whether the layer uses a bias vector.
+        aggregation_method: Specifies the method to use when combining outputs
+            if multiple adjacency matricies are specified ('concat', 'sum' or
+            'max').
         add_adjacency_self_loops: Boolean, whether to add self loops
             to the adjacency matrix.
         normalize_adjacency_matrix: Boolean, whether to normalize the
@@ -38,8 +41,8 @@ class GraphConv(Layer):
         Two tensors are provided as input.
         An N-D feature tensor with shape:
             `(batch_size, ..., input_dim)`.
-        A 2-D adjacency tensor with shape:
-            `(batch_size, ..., input_dim, input_dim)`.
+        A 3-D adjacency tensor with shape:
+            `(batch_size, num_adjacency, input_dim, input_dim)`.
     Output shape:
         N-D tensor with shape: `(batch_size, ..., units)`.
         For instance, for a 2D input with shape `(batch_size, input_dim)`,
@@ -49,6 +52,7 @@ class GraphConv(Layer):
                  units,
                  activation='relu',
                  use_bias=True,
+                 aggregation_method='sum',
                  add_adjacency_self_loops=False,
                  normalize_adjacency_matrix=False,
                  kernel_initializer='glorot_uniform',
@@ -65,6 +69,7 @@ class GraphConv(Layer):
         self.units = int(units)
         self.activation = activations.get(activation)
         self.use_bias = use_bias
+        self.aggregation_method = aggregation_method
         self.add_adjacency_self_loops = add_adjacency_self_loops
         self.normalize_adjacency_matrix = normalize_adjacency_matrix
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -74,7 +79,7 @@ class GraphConv(Layer):
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-        self.input_spec = [InputSpec(min_ndim=2), InputSpec(ndim=3)]
+        self.input_spec = [InputSpec(min_ndim=2), InputSpec(ndim=4)]
 
     def build(self, input_shape):
         # Validate inputs
@@ -109,31 +114,35 @@ class GraphConv(Layer):
 
         # Define the input spec
         last_dim = tensor_shape.dimension_value(features_shape[-1])
-        adjacency_dim = tensor_shape.dimension_value(features_shape[-2])
+        adjacency_dim = tensor_shape.dimension_value(adjacency_shape[2])
+        self.adjacency_count = tensor_shape.dimension_value(adjacency_shape[1])
         self.input_spec = [
             InputSpec(min_ndim=2, axes={-1: last_dim, -2: adjacency_dim}),
-            InputSpec(ndim=3, axes={-1: adjacency_dim, -2: adjacency_dim})
+            InputSpec(ndim=4, axes={
+                1: self.adjacency_count,
+                2: adjacency_dim,
+                3: adjacency_dim})
         ]
 
         # Add weights
-        self.kernel = self.add_weight(
-                    'kernel',
-                    shape=[last_dim, self.units],
-                    initializer=self.kernel_initializer,
-                    regularizer=self.kernel_regularizer,
-                    constraint=self.kernel_constraint,
-                    dtype=self.dtype,
-                    trainable=True)
+        self.kernel = [self.add_weight(
+                       f'kernel_{i}',
+                       shape=[last_dim, self.units],
+                       initializer=self.kernel_initializer,
+                       regularizer=self.kernel_regularizer,
+                       constraint=self.kernel_constraint,
+                       dtype=self.dtype,
+                       trainable=True) for i in range(self.adjacency_count)]
 
         if self.use_bias:
-            self.bias = self.add_weight(
-                        'bias',
-                        shape=[self.units, ],
-                        initializer=self.bias_initializer,
-                        regularizer=self.bias_regularizer,
-                        constraint=self.bias_constraint,
-                        dtype=self.dtype,
-                        trainable=True)
+            self.bias = [self.add_weight(
+                         f'bias_{i}',
+                         shape=[self.units, ],
+                         initializer=self.bias_initializer,
+                         regularizer=self.bias_regularizer,
+                         constraint=self.bias_constraint,
+                         dtype=self.dtype,
+                         trainable=True) for i in range(self.adjacency_count)]
         else:
             self.bias = None
 
@@ -149,14 +158,28 @@ class GraphConv(Layer):
             add_adjacency_self_loops=self.add_adjacency_self_loops,
             normalize_adjacency_matrix=self.normalize_adjacency_matrix)
 
+        all_outputs = [self._call_convolution(features, adjacency[:, i], i)
+                       for i in range(self.adjacency_count)]
+
+        if self.aggregation_method == 'concat':
+            return tf.concat(all_outputs, axis=2)
+        elif self.aggregation_method == 'sum':
+            return tf.reduce_sum(all_outputs, axis=0)
+        elif self.aggregation_method == 'max':
+            return tf.reduce_max(all_outputs, axis=0)
+        else:
+            raise ValueError('Undefined aggregation method' +
+                             f'`{self.aggregation_method}`.')
+
+    def _call_convolution(self, features, adjacency, index):
         # Apply the adjacency matrix
         # NB: Do 'tensordot' rather than 'matmul' as W is not
         # broadcasted across batches
         outputs = tf.matmul(adjacency, features)
-        outputs = tf.tensordot(outputs, self.kernel, axes=1)
+        outputs = tf.tensordot(outputs, self.kernel[index], axes=1)
 
         if self.use_bias:
-            outputs = nn.bias_add(outputs, self.bias)
+            outputs = nn.bias_add(outputs, self.bias[index])
         if self.activation is not None:
             outputs = self.activation(outputs)  # pylint: disable=not-callable
 
@@ -164,15 +187,22 @@ class GraphConv(Layer):
 
     def compute_output_shape(self, input_shape):
         features_shape = tensor_shape.TensorShape(input_shape[0])
+        adjacency_shape = tensor_shape.TensorShape(input_shape[1])
         features_shape = features_shape.with_rank_at_least(2)
 
-        return features_shape[:-1].concatenate(self.units)
+        if self.aggregation_method == 'concat':
+            multiplier = tensor_shape.dimension_value(adjacency_shape[1])
+        else:
+            multiplier = 1
+
+        return features_shape[:-1].concatenate(self.units * multiplier)
 
     def get_config(self):
         config = {
             'units': self.units,
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
+            'aggregation_method': self.aggregation_method,
             'add_adjacency_self_loops': self.add_adjacency_self_loops,
             'normalize_adjacency_matrix': self.normalize_adjacency_matrix,
             'kernel_initializer':
@@ -210,10 +240,10 @@ class GraphConv(Layer):
             The processed adjacency matrices.
         """
         if add_adjacency_self_loops:
-            adjacency = tf.linalg.set_diag(adjacency,
-                                           tf.ones_like(adjacency)[:, 0])
+            ones = tf.ones_like(adjacency)[:, :, 0]
+            adjacency = tf.linalg.set_diag(adjacency, ones)
         if normalize_adjacency_matrix:
-            degree_inverse = tf.linalg.diag(1/tf.reduce_sum(adjacency, axis=1))
+            degree_inverse = tf.linalg.diag(1/tf.reduce_sum(adjacency, axis=2))
             adjacency = tf.matmul(degree_inverse, adjacency)
 
         return adjacency
