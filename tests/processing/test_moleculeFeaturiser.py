@@ -26,27 +26,48 @@ class TestMoleculeFeaturiser(object):
 
     @pytest.mark.parametrize("smiles_input,feature_names,length,mx,mn", [
         # Tests for individual features
-        ('OCCCCO', ['fp_atompair_b'], 2048, 1, 0),
-        ('OCCCCO', ['fp_atompair_c'], 2048, 5, 0),
-        ('OCCCCO', ['fp_morgan_b2'], 2048, 1, 0),
-        ('OCCCCO', ['fp_morgan_c2'], 2048, 4, 0),
-        ('OCCCCO', ['fp_morgan_b3'], 2048, 1, 0),
-        ('OCCCCO', ['fp_morgan_c3'], 2048, 4, 0),
-
-        # Tests for multiple features
-        # ('CCO', ['atomic_number', 'symbol_onehot', 'degree'], [
-        #     [6, 0, 1, 0, 0, 1],
-        #     [6, 0, 1, 0, 0, 2],
-        #     [8, 0, 0, 1, 0, 1]]),
+        ('OCCCCO', ['fp_atompair_hb'], 2048, 1, 0),
+        ('OCCCCO', ['fp_atompair_hc'], 2048, 5, 0),
+        ('OCCCCO', ['fp_morgan2_hb'], 2048, 1, 0),
+        ('OCCCCO', ['fp_morgan2_hc'], 2048, 4, 0),
+        ('OCCCCO', ['fp_morgan3_hb'], 2048, 1, 0),
+        ('OCCCCO', ['fp_morgan3_hc'], 2048, 4, 0),
     ])
-    def test_process_molecule_stats(self,
-                                    smiles_input,
-                                    feature_names,
-                                    length,
-                                    mx,
-                                    mn):
+    def test_process_molecule_fp_hash(self,
+                                      smiles_input,
+                                      feature_names,
+                                      length,
+                                      mx,
+                                      mn):
         featuriser = MoleculeFeaturiser(feature_names)
         mol = Chem.MolFromSmiles(smiles_input)
+        features = featuriser.process_molecule(mol)
+
+        assert len(features) == length
+        assert max(features) == mx
+        assert min(features) == mn
+
+    @pytest.mark.parametrize("smiles_input,feature_names,length,mx,mn", [
+        # Tests for individual features
+        ('OCCCCO', ['fp_atompair_sb'], 23, 1, 0),
+        ('OCCCCO', ['fp_atompair_sc'], 11, 2, 0),
+        ('OCCCCO', ['fp_morgan2_sb'], 25, 1, 0),
+        ('OCCCCO', ['fp_morgan2_sc'], 14, 4, 0),
+        ('OCCCCO', ['fp_morgan3_sb'], 26, 1, 0),
+        ('OCCCCO', ['fp_morgan3_sc'], 15, 4, 0),
+    ])
+    def test_process_molecule_fp_sparse(self,
+                                        smiles_input,
+                                        feature_names,
+                                        length,
+                                        mx,
+                                        mn):
+        mol = Chem.MolFromSmiles(smiles_input)
+        enum_smiles = ['CCO', 'CCN(CC)CC', 'c1ccccc1']
+        enum_mols = [Chem.MolFromSmiles(smiles) for smiles in enum_smiles]
+
+        featuriser = MoleculeFeaturiser(feature_names)
+        featuriser.enumerate_tokens(enum_mols, feature_names)
         features = featuriser.process_molecule(mol)
 
         assert len(features) == length
