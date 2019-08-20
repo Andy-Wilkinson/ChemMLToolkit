@@ -45,10 +45,27 @@ class TestAdjacencyOps(object):
             [[0.2, 0.4, 0.4], [0.2, 0.3, 0.5], [0.2, 0.5, 0.3]],
         ]),
     ])
-    def test_normalize(self, input, expected_result):
+    def test_normalise(self, input, expected_result):
         input = np.array(input)
         reference_input = input.copy()
         result = adjacency_ops.normalise(input)
-        result = np.round(result, 5)
+        result = np.round(result, 2)
+        assert (result == expected_result).all()
+        assert (input == reference_input).all()
+
+    @pytest.mark.parametrize("input,expected_result", [
+        ([
+            [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
+            [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
+        ], [
+            [[0, 0, 0.71], [0, 0, 0.71], [0.71, 0.71, 0]],
+            [[0.2, 0.28, 0.28], [0.28, 0.3, 0.5], [0.28, 0.5, 0.3]],
+        ]),
+    ])
+    def test_normalise_spectral(self, input, expected_result):
+        input = np.array(input)
+        reference_input = input.copy()
+        result = adjacency_ops.normalise_spectral(input)
+        result = np.round(result, 2)
         assert (result == expected_result).all()
         assert (input == reference_input).all()

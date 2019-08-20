@@ -54,8 +54,32 @@ def normalise(adjacency_matrices):
         The resulting list of adjacency matricies.
     """
     def normalise_matrix(matrix):
-        degree = np.diag(np.sum(matrix, axis=0))
-        return np.linalg.inv(degree) @ matrix
+        degree = np.sum(matrix, axis=0)
+        degree_inv = np.power(degree, -1.0)
+        inv_matrix = np.diag(degree_inv)
+        return inv_matrix @ matrix
+
+    adjs = [normalise_matrix(matrix) for matrix in adjacency_matrices]
+    return np.array(adjs)
+
+
+def normalise_spectral(adjacency_matrices):
+    """Normalises adjacency matricies with a spectral method
+
+    This will normalise a set of adjacency matricies using the spectral
+    method of Kipf and Welling (https://arxiv.org/abs/1609.02907).
+
+    Args:
+        adjacency_matrices: The input list of adjacency matricies.
+
+    Returns:
+        The resulting list of adjacency matricies.
+    """
+    def normalise_matrix(matrix):
+        degree = np.sum(matrix, axis=0)
+        degree_inv = np.power(degree, -0.5)
+        inv_matrix = np.diag(degree_inv)
+        return inv_matrix @ matrix @ inv_matrix
 
     adjs = [normalise_matrix(matrix) for matrix in adjacency_matrices]
     return np.array(adjs)
