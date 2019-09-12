@@ -83,3 +83,23 @@ def normalise_spectral(adjacency_matrices):
 
     adjs = [normalise_matrix(matrix) for matrix in adjacency_matrices]
     return np.array(adjs)
+
+
+def pad(adjacency_matrices, size):
+    """Pads adjacency matricies to the desired size
+
+    This will pad the adjacency matricies to the specified size, appending
+    zeros as required. The output adjacency matricies will all be of size
+    'size' x 'size'.
+
+    Args:
+        adjacency_matrices: The input list of adjacency matricies.
+        size: The desired dimension of the output matricies.
+
+    Returns:
+        The resulting list of adjacency matricies.
+    """
+    padding = size - adjacency_matrices.shape[1]
+    return np.pad(adjacency_matrices,
+                  [(0, 0), (0, padding), (0, padding)],
+                  mode='constant')

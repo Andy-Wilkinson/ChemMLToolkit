@@ -69,3 +69,21 @@ class TestAdjacencyOps(object):
         result = np.round(result, 2)
         assert (result == expected_result).all()
         assert (input == reference_input).all()
+
+    @pytest.mark.parametrize("input,size,expected_result", [
+        ([
+            [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
+            [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
+        ], 5, [
+            [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 0, 0, 0],
+             [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
+            [[1, 2, 2, 0, 0], [2, 3, 5, 0, 0], [2, 5, 3, 0, 0],
+             [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
+        ]),
+    ])
+    def test_pad(self, input, size, expected_result):
+        input = np.array(input)
+        reference_input = input.copy()
+        result = adjacency_ops.pad(input, size)
+        assert (result == expected_result).all()
+        assert (input == reference_input).all()
