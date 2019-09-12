@@ -50,6 +50,22 @@ def flatten_dict(d: dict, separator: str = '.') -> dict:
     return dict(items)
 
 
+def merge_dict(d: dict, defaults: dict) -> dict:
+    """Merges a dictionary with a set of default values.
+
+    This will combine the entries in two dictionaries, with the first
+    argument taking preference.
+
+    Args:
+        d: The dictionary of specified values.
+        default: The dictionary of default values.
+
+    Returns:
+        The merged dictionary.
+    """
+    return {**defaults, **d}
+
+
 def one_hot(feature, tokens: list) -> list:
     """One-hot encodes a feature.
 

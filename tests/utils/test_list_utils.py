@@ -27,6 +27,22 @@ class TestListUtils(object):
         result = list_utils.flatten_dict(input)
         assert result == expected_result
 
+    @pytest.mark.parametrize("input,defaults,expected_result", [
+        ({}, {}, {}),
+        ({'alpha': 42, 'beta': 'xyz'},
+         {},
+         {'alpha': 42, 'beta': 'xyz'}),
+        ({},
+         {'alpha': 42, 'beta': 'xyz'},
+         {'alpha': 42, 'beta': 'xyz'}),
+        ({'alpha': 42, 'beta': 'xyz'},
+         {'beta': 'abc', 'gamma': 'def'},
+         {'alpha': 42, 'beta': 'xyz', 'gamma': 'def'})
+    ])
+    def test_merge_dict(self, input, defaults, expected_result):
+        result = list_utils.merge_dict(input, defaults)
+        assert result == expected_result
+
     @pytest.mark.parametrize("input,tokens,expected_result", [
         ('A', ['A', 'B', 'C', 'D'], [1, 0, 0, 0]),
         ('C', ['A', 'B', 'C', 'D'], [0, 0, 1, 0]),
