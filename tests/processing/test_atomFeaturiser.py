@@ -52,3 +52,4 @@ class TestAtomFeaturiser(object):
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
         assert features == expected_output
+        assert featuriser.get_feature_length() == len(expected_output[0])

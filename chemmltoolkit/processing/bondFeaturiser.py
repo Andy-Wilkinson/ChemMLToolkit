@@ -1,6 +1,7 @@
 from chemmltoolkit.utils.list_utils import flatten
 from chemmltoolkit.utils.list_utils import one_hot
 import numpy as np
+from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
 from rdkit.Chem import Bond
 from rdkit.Chem import BondType
@@ -84,6 +85,17 @@ class BondFeaturiser:
             adj[:, atom_end, atom_begin] = features
 
         return adj
+
+    def get_feature_length(self) -> int:
+        """Calculates the length of the generated feature vector
+
+        Returns:
+            The length of the feature vector.
+        """
+        molecule = MolFromSmiles('CC')
+        bond = molecule.GetBonds()[0]
+        features = self.process_bond(bond)
+        return len(features)
 
     def _get_feature(self, name):
         func_name = f'_f_{name}'

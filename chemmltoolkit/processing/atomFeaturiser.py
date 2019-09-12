@@ -1,5 +1,6 @@
 from chemmltoolkit.utils.list_utils import flatten
 from chemmltoolkit.utils.list_utils import one_hot
+from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
 from rdkit.Chem import Atom
 from rdkit.Chem import HybridizationType
@@ -70,6 +71,17 @@ class AtomFeaturiser:
         """
         atoms = mol.GetAtoms()
         return [self.process_atom(atom) for atom in atoms]
+
+    def get_feature_length(self) -> int:
+        """Calculates the length of the generated feature vector
+
+        Returns:
+            The length of the feature vector.
+        """
+        molecule = MolFromSmiles('CC')
+        atom = molecule.GetAtoms()[0]
+        features = self.process_atom(atom)
+        return len(features)
 
     def _get_feature(self, name):
         func_name = f'_f_{name}'

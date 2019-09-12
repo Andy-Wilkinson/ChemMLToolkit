@@ -61,6 +61,7 @@ class TestBondFeaturiser(object):
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
         assert features == expected_output
+        assert featuriser.get_feature_length() == len(expected_output[0][2])
 
     @pytest.mark.parametrize("smiles_input,feature_names,expected_output", [
         # We assume RDKit retains atom ordering from SMILEs

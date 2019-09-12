@@ -1,6 +1,7 @@
 from chemmltoolkit.utils.list_utils import flatten
 from collections import Counter
 import numpy as np
+from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import DataStructs
 import rdkit.Chem.Descriptors as Desc
 from rdkit.Chem import Mol
@@ -51,6 +52,16 @@ class MoleculeFeaturiser:
 
         features = [feature(mol) for feature in self.features]
         return flatten(features)
+
+    def get_feature_length(self) -> int:
+        """Calculates the length of the generated feature vector
+
+        Returns:
+            The length of the feature vector.
+        """
+        molecule = MolFromSmiles('CC')
+        features = self.process_molecule(molecule)
+        return len(features)
 
     def enumerate_tokens(self,
                          mols: list,

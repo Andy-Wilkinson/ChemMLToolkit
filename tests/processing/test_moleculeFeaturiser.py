@@ -23,6 +23,7 @@ class TestMoleculeFeaturiser(object):
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
         assert features == expected_output
+        assert featuriser.get_feature_length() == len(expected_output)
 
     @pytest.mark.parametrize("smiles_input,feature_names,length,mx,mn", [
         # Tests for individual features
@@ -46,6 +47,7 @@ class TestMoleculeFeaturiser(object):
         assert len(features) == length
         assert max(features) == mx
         assert min(features) == mn
+        assert featuriser.get_feature_length() == length
 
     @pytest.mark.parametrize("smiles_input,feature_names,length,mx,mn", [
         # Tests for individual features
@@ -73,3 +75,4 @@ class TestMoleculeFeaturiser(object):
         assert len(features) == length
         assert max(features) == mx
         assert min(features) == mn
+        assert featuriser.get_feature_length() == length
