@@ -8,6 +8,9 @@ name: $(BuildID)
 trigger:
 - master
 
+# Note - Turn off builds for pull requests (on by default)
+pr: none
+
 jobs:
 
 - job: 'Test'
