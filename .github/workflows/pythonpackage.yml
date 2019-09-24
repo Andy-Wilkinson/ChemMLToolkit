@@ -13,9 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Setup conda environment
+    - name: Initialise conda
       run: |
         conda init bash
+    - name: Setup conda environment
+      run: |
         conda env create --quiet --file environments/dev-environment-37.yml
         conda activate dev-environment
     - name: Check conda environment
