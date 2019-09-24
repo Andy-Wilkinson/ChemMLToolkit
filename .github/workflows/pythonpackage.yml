@@ -16,7 +16,7 @@ jobs:
     - name: Setup conda environment
       run: |
         conda env create --quiet --file environments/dev-environment-37.yml
-        source activate dev-environment
+        conda activate dev-environment
     - name: Check conda environment
       run: |
         conda env list
