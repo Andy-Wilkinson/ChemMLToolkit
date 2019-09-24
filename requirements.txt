@@ -1,4 +1,5 @@
 pandas
+tensorflow==2.0.0-rc1
 flake8
 pytest
 pytest-cov
