@@ -15,6 +15,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Setup conda environment
       run: |
+        conda init bash
         conda env create --quiet --file environments/dev-environment-37.yml
         conda activate dev-environment
     - name: Check conda environment
