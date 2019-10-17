@@ -139,10 +139,64 @@ class TestSmilesSmilesTokeniser(object):
 
         tokeniser = smiles.SmilesTokeniser(token_list,
                                            splitting_method=split,
-                                           unknown_placeholder=placeholder)
+                                           token_unknown=placeholder)
         tokens_result = tokeniser.tokenise_smiles(smiles_str)
         assert tokens_result == tokens
         assert tokeniser.missing_tokens == {'S', 'N'}
+
+    @pytest.mark.parametrize("smiles_str,token_sos,token_eos,tokens", [
+        ('OCCN', None, None, [2, 0, 0, 1]),  # No SOS/EOS tokens
+        ('OCCN', '<SOS>', None, [5, 2, 0, 0, 1]),  # SOS token
+        ('OCCN', None, '<EOS>', [2, 0, 0, 1, 6]),  # EOS token
+        ('OCCN', '<SOS>', '<EOS>', [5, 2, 0, 0, 1, 6]),  # SOS+EOS tokens
+    ])
+    def test_tokenise_smiles_with_sos_eos(self, smiles_str,
+                                          token_sos, token_eos, tokens):
+        token_list = ['C', 'N', 'O', 'Cl', 'Br', '<SOS>', '<EOS>']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           token_sos=token_sos,
+                                           token_eos=token_eos)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,token_pad,length,truncate,tokens", [
+        ('OCCN', None, None, False, [2, 0, 0, 1]),
+        ('OCCN', '_', 10, False, [2, 0, 0, 1, 5, 5, 5, 5, 5, 5]),
+        ('OCCN', '_', 10, True, [2, 0, 0, 1, 5, 5, 5, 5, 5, 5]),
+        ('OCCN', ' ', 10, False, [2, 0, 0, 1, 6, 6, 6, 6, 6, 6]),
+        ('OCCN', ' ', 10, True, [2, 0, 0, 1, 6, 6, 6, 6, 6, 6]),
+        ('OCCN', ' ', 3, False, [2, 0, 0, 1]),
+        ('OCCN', ' ', 3, True, [2, 0, 0]),
+    ])
+    def test_tokenise_smiles_with_padding(self, smiles_str,
+                                          token_pad, length, truncate, tokens):
+        token_list = ['C', 'N', 'O', 'Cl', 'Br', '_', ' ']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           token_padding=token_pad,
+                                           sequence_length=length,
+                                           truncate_sequence=truncate)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
+
+    @pytest.mark.parametrize("smiles_str,token_sos,token_eos,tokens", [
+        ('OCCN', None, None, [2, 0, 0, 1, 7, 7, 7]),  # No SOS/EOS tokens
+        ('OCCN', '<SOS>', None, [5, 2, 0, 0, 1, 7, 7]),  # SOS token
+        ('OCCN', None, '<EOS>', [2, 0, 0, 1, 6, 7, 7]),  # EOS token
+        ('OCCN', '<SOS>', '<EOS>', [5, 2, 0, 0, 1, 6, 7]),  # SOS+EOS tokens
+    ])
+    def test_tokenise_smiles_with_pad_sos_eos(self, smiles_str,
+                                              token_sos, token_eos, tokens):
+        token_list = ['C', 'N', 'O', 'Cl', 'Br', '<SOS>', '<EOS>', '_']
+
+        tokeniser = smiles.SmilesTokeniser(token_list,
+                                           token_sos=token_sos,
+                                           token_eos=token_eos,
+                                           token_padding='_',
+                                           sequence_length=7)
+        tokens_result = tokeniser.tokenise_smiles(smiles_str)
+        assert tokens_result == tokens
 
     @pytest.mark.parametrize("smiles_str,split,tokens", [
         ('C3CC3', 'all_tokens', [1, 2, 1, 1, 2]),
@@ -215,3 +269,15 @@ class TestSmilesSmilesTokeniser(object):
                                            simplify_rings=True)
         smiles_result = tokeniser.untokenise_smiles(tokens)
         assert smiles_result == smiles_str
+
+    def test_exception_if_padding_not_seq_length(self):
+        token_list = ['?', 'C', '1', '2', '%12', '%']
+
+        with pytest.raises(ValueError):
+            _ = smiles.SmilesTokeniser(token_list, token_padding='?')
+
+    def test_exception_if_seq_length_not_padding(self):
+        token_list = ['?', 'C', '1', '2', '%12', '%']
+
+        with pytest.raises(ValueError):
+            _ = smiles.SmilesTokeniser(token_list, sequence_length=50)

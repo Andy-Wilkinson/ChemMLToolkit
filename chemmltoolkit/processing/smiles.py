@@ -1,3 +1,6 @@
+from chemmltoolkit.utils.list_utils import pad_list
+
+
 def desalt_smiles(smiles: str) -> str:
     """Removes all salts from the specified SMILES strings.
 
@@ -101,20 +104,46 @@ class SmilesTokeniser(object):
     Args:
         tokens: A list of strings containing the token list to use.
         splitting_method: The technique for splitting the SMILES string.
-        unknown_placeholder: The token to use for unidentified tokens, or
+        token_unknown: The token to use for unidentified tokens, or
             None if SMILES string with unknown tokens should be rejected.
+        token_sos: A token to add at the start of the sequence.
+        token_eos: A token to add at the end of the sequence.
+        token_padding: A token to use to pad to the desired length.
+        sequence_length: The desired length of the resulting sequence.
+        truncate_sequence: Whether to truncate the sequence if it is longer
+            than 'sequence_length'.
         simplify_rings: Will re-use ring number tokens where possible.
     """
+
     def __init__(self,
                  tokens: list,
                  splitting_method: str = 'all_tokens',
-                 unknown_placeholder: str = None,
+                 token_unknown: str = None,
+                 token_sos: str = None,
+                 token_eos: str = None,
+                 token_padding: str = None,
+                 sequence_length: int = None,
+                 truncate_sequence: bool = False,
                  simplify_rings: bool = False):
+
+        if (token_padding and not sequence_length) or \
+           (sequence_length and not token_padding):
+            raise ValueError('Both `token_padding` and `sequence_length`' +
+                             'must be set together.')
+
         self._tokens_list = tokens
         self._tokens_missing = set()
-        self._token_unknown = tokens.index(unknown_placeholder)\
-            if unknown_placeholder else None
         self._token_lookup = {t: i for i, t in enumerate(tokens)}
+        self._token_unknown = tokens.index(token_unknown)\
+            if token_unknown else None
+        self._sequence_sos = [tokens.index(token_sos)]\
+            if token_sos else []
+        self._sequence_eos = [tokens.index(token_eos)]\
+            if token_eos else []
+        self._token_padding = tokens.index(token_padding)\
+            if token_padding else None
+        self._sequence_length = sequence_length
+        self._truncate_sequence = truncate_sequence
         self._splitting_method = splitting_method
         self._simplify_rings = simplify_rings
 
@@ -169,8 +198,18 @@ class SmilesTokeniser(object):
 
         if None in smiles_tokens:
             return None
-        else:
-            return smiles_tokens
+
+        smiles_tokens = self._sequence_sos + smiles_tokens + self._sequence_eos
+
+        if self._token_padding:
+            smiles_tokens = pad_list(smiles_tokens,
+                                     self._sequence_length,
+                                     self._token_padding)
+
+            if self._truncate_sequence:
+                smiles_tokens = smiles_tokens[:self._sequence_length]
+
+        return smiles_tokens
 
     def untokenise_smiles(self, smiles_tokens: list) -> str:
         """Returns the SMILES string corresponding to the tokenised representation.
