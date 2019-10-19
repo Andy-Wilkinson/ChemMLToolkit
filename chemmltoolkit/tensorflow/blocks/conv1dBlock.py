@@ -8,6 +8,30 @@ from chemmltoolkit.tensorflow.blocks.utils import get_dropout
 
 @register_keras_custom_object
 class Conv1DBlock(Layer):
+    """A block of Conv1D layers
+
+    A stacked block of Conv1D layers, with optional batch normalisation and
+    dropout.
+
+    If you supply a list to any argument, this specifies the value to use for
+    each individual layer. If you supply a single value, this same value
+    applies to all layers.
+
+    Arguments:
+        filters: Integer, the dimensionality of the output space
+            (i.e. the number of output filters in the convolution).
+        kernel_size: An integer or tuple/list of a single integer,
+            specifying the length of the 1D convolution window.
+        activation: Activation function to use.
+        batchnorm: The type of batch normalisation to use. Possible values are,
+            None, 'norm' (normalisation), 'renorm' (renormalisation).
+        dropout: The level of dropout to use (the default of 0.0 does not
+            apply any dropout).
+    Input shape:
+        3D tensor with shape: `(batch_size, steps, input_dim)`.
+    Output shape:
+        3D tensor with shape: `(batch_size, new_steps, last_filter)`
+    """
     def __init__(self,
                  filters,
                  kernel_size,

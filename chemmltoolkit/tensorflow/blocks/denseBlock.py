@@ -8,6 +8,27 @@ from chemmltoolkit.tensorflow.blocks.utils import get_dropout
 
 @register_keras_custom_object
 class DenseBlock(Layer):
+    """A block of Dense layers
+
+    A stacked block of Dense layers, with optional batch normalisation and
+    dropout.
+
+    If you supply a list to any argument, this specifies the value to use for
+    each individual layer. If you supply a single value, this same value
+    applies to all layers.
+
+    Arguments:
+        units: Positive integer, dimensionality of the hidden layer.
+        activation: Activation function to use.
+        batchnorm: The type of batch normalisation to use. Possible values are,
+            None, 'norm' (normalisation), 'renorm' (renormalisation).
+        dropout: The level of dropout to use (the default of 0.0 does not
+            apply any dropout).
+    Input shape:
+        nD tensor with shape: `(batch_size, ..., input_dim)`.
+    Output shape:
+        nD tensor with shape: `(batch_size, ..., last_units)`.
+    """
     def __init__(self,
                  units,
                  activation=None,

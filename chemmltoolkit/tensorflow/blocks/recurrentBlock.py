@@ -14,6 +14,38 @@ from chemmltoolkit.tensorflow.blocks.utils import get_dropout
 
 @register_keras_custom_object
 class RecurrentBlock(Layer):
+    """A block of recurrent layers
+
+    A stacked block of GRU or LSTM layers, with optional batch normalisation
+    and dropout.
+
+    If you supply a list to any argument, this specifies the value to use for
+    each individual layer. If you supply a single value, this same value
+    applies to all layers.
+
+    Arguments:
+        cell_type: The type of recurrent cell to use ('gru' or 'lstm')
+        units: Positive integer, dimensionality of the output space.
+        activation: Activation function to use.
+        bidirectional: Boolean, whether the layer should be bidirectional.
+        conditioning_mode: The way in which the conditioning tensor is
+            combined with the current input for each layer. Possible values
+            are, None (do not apply conditioning), 'ave', 'concat', 'mul',
+            'sum'.
+        batchnorm: The type of batch normalisation to use. Possible values are,
+            None, 'norm' (normalisation), 'renorm' (renormalisation).
+        dropout: The level of dropout to use (the default of 0.0 does not
+            apply any dropout).
+    Input shape:
+        Two tensors are provided as input.
+            3D input tensor with shape:
+                `(batch_size, steps, input_dim)`.
+            3D conditioning tensor with shape:
+                `(batch_size, steps, input_dim)`
+                or None if conditioning is not used.
+    Output shape:
+        3D tensor with shape: `(batch_size, steps, last_units)`
+    """
     def __init__(self,
                  cell_type,
                  units,
@@ -35,7 +67,6 @@ class RecurrentBlock(Layer):
                 in zip_expand(cell_type, units, activation, bidirectional,
                               conditioning_mode, batchnorm, dropout):
 
-            # TODO: sum, mul, ave
             if conditioning_mode is None:
                 conditioning_layer = None
             elif conditioning_mode == 'ave':
