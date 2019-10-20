@@ -13,4 +13,4 @@ dependencies:
   - wheel
   - twine
   - pip:
-    - tensorflow==2.0.0-alpha
+    - tensorflow==2.0.0
