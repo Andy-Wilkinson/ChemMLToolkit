@@ -49,7 +49,7 @@ class RecurrentBlock(Layer):
     def __init__(self,
                  cell_type,
                  units,
-                 activation=None,
+                 activation='tanh',
                  bidirectional=False,
                  conditioning_mode=None,
                  batchnorm=None,
