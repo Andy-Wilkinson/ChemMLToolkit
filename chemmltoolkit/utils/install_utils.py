@@ -34,7 +34,7 @@ def install_rdkit():
         distpackages_dir = site.getsitepackages()[0]
 
         shutil.copytree(os.path.join(rdkit_package_dir,
-                                     'lib/python3.6/site-packages/rdkit'),
+                                     'lib/python3.7/site-packages/rdkit'),
                         os.path.join(distpackages_dir, 'rdkit'))
 
         so_files = glob.glob(os.path.join(rdkit_package_dir, 'lib/*.so.*'))
@@ -50,7 +50,7 @@ def install_rdkit():
         # compiled with a slightly different naming system in Google Colab
 
         os.symlink('/usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1',
-                   '/usr/lib/x86_64-linux-gnu/libboost_python3.so.1.65.1')
+                   '/usr/lib/x86_64-linux-gnu/libboost_python37.so.1.67.0')
 
         import rdkit
         print(f'RDKit version {rdkit.__version__} installed successfully')
