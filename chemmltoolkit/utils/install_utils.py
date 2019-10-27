@@ -7,6 +7,31 @@ import importlib
 from chemmltoolkit.utils.data_utils import get_file, extract_all
 
 
+def install_conda(package_url):
+    """Installs conda packages.
+
+    Warning: This is a hack to allow conda package installation in situations
+    when conda is not available (e.g. Google Colab). In general coda should
+    be used directly!
+
+    Args:
+        package_url: The direct URL to the conda package to install.
+    """
+    # Download and extract the package
+
+    package_filename = package_url.split('/')[-1]
+    package_archive = get_file(package_filename, package_url)
+    package_dir = extract_all(package_archive)
+
+    # Copy any library files to the relevant location
+
+    so_files = glob.glob(os.path.join(package_dir, 'lib/*.so.*'))
+    for filename in so_files:
+        shutil.copy(filename, '/usr/lib/x86_64-linux-gnu/')
+
+    return package_dir
+
+
 def install_rdkit():
     """Installs RDKit from the conda package.
 
@@ -18,17 +43,23 @@ def install_rdkit():
         import rdkit
         print(f'RDKit version {rdkit.__version__} already installed')
     else:
-        # Download and extract the package
+        # Download and install the conda packages
 
-        rdkit_package_filename = 'rdkit.tar.bz2'
-        rdkit_package_url = 'https://anaconda.org/rdkit/rdkit/2019.09.1.0/' + \
+        rdkit_url = 'https://anaconda.org/rdkit/rdkit/2019.09.1.0/' + \
             'download/linux-64/rdkit-2019.09.1.0-py37hc20afe1_1.tar.bz2'
+        pyboost_url = 'https://anaconda.org/anaconda/py-boost/1.67.0/' + \
+            'download/linux-64/py-boost-1.67.0-py37h04863e7_4.tar.bz2'
+        libboost_url = 'https://anaconda.org/anaconda/libboost/1.67.0/' + \
+            'download/linux-64/libboost-1.67.0-h46d08c1_4.tar.bz2'
+        icu_url = 'https://anaconda.org/anaconda/icu/58.2/download/' + \
+            'linux-64/icu-58.2-h211956c_0.tar.bz2'
 
-        rdkit_package_archive = get_file(
-            rdkit_package_filename, rdkit_package_url)
-        rdkit_package_dir = extract_all(rdkit_package_archive)
+        install_conda(icu_url)
+        install_conda(libboost_url)
+        install_conda(pyboost_url)
+        rdkit_package_dir = install_conda(rdkit_url)
 
-        # Copy the libraries to the relevant locations
+        # Copy additional files to the relevant locations
         # NB: On Colab to '/usr/local/lib/python3.6/dist-packages/rdkit'
 
         distpackages_dir = site.getsitepackages()[0]
@@ -37,20 +68,12 @@ def install_rdkit():
                                      'lib/python3.7/site-packages/rdkit'),
                         os.path.join(distpackages_dir, 'rdkit'))
 
-        so_files = glob.glob(os.path.join(rdkit_package_dir, 'lib/*.so.*'))
-        for filename in so_files:
-            shutil.copy(filename, '/usr/lib/x86_64-linux-gnu/')
-
         os.mkdir('/opt/anaconda1anaconda2anaconda3')
 
         shutil.copytree(os.path.join(rdkit_package_dir, 'share'),
                         '/opt/anaconda1anaconda2anaconda3/share')
-
-        # Create a symbolic link for the libboost_python library as rdkit is
-        # compiled with a slightly different naming system in Google Colab
-
-        os.symlink('/usr/lib/x86_64-linux-gnu/libboost_python3-py36.so.1.65.1',
-                   '/usr/lib/x86_64-linux-gnu/libboost_python37.so.1.67.0')
+        
+        # Check installation success
 
         import rdkit
         print(f'RDKit version {rdkit.__version__} installed successfully')
