@@ -21,8 +21,8 @@ def install_rdkit():
         # Download and extract the package
 
         rdkit_package_filename = 'rdkit.tar.bz2'
-        rdkit_package_url = 'https://anaconda.org/rdkit/rdkit/2018.09.1.0/' + \
-            'download/linux-64/rdkit-2018.09.1.0-py36h71b666b_1.tar.bz2'
+        rdkit_package_url = 'https://anaconda.org/rdkit/rdkit/2019.09.1.0/' + \
+            'download/linux-64/rdkit-2019.09.1.0-py37hc20afe1_1.tar.bz2'
 
         rdkit_package_archive = get_file(
             rdkit_package_filename, rdkit_package_url)
