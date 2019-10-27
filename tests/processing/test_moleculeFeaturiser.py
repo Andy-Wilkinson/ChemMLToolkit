@@ -53,9 +53,9 @@ class TestMoleculeFeaturiser(object):
         # Tests for individual features
         ('OCCCCO', ['fp_atompair_sb'], 23, 1, 0),
         ('OCCCCO', ['fp_atompair_sc'], 11, 2, 0),
-        ('OCCCCO', ['fp_morgan2_sb'], 25, 1, 0),
+        ('OCCCCO', ['fp_morgan2_sb'], 14, 1, 0),
         ('OCCCCO', ['fp_morgan2_sc'], 14, 4, 0),
-        ('OCCCCO', ['fp_morgan3_sb'], 26, 1, 0),
+        ('OCCCCO', ['fp_morgan3_sb'], 15, 1, 0),
         ('OCCCCO', ['fp_morgan3_sc'], 15, 4, 0),
     ])
     def test_process_molecule_fp_sparse(self,
