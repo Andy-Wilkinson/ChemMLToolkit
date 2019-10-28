@@ -72,7 +72,7 @@ def install_rdkit():
 
         shutil.copytree(os.path.join(rdkit_package_dir, 'share'),
                         '/opt/anaconda1anaconda2anaconda3/share')
-        
+
         # Check installation success
 
         import rdkit
