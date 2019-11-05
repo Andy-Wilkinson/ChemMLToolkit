@@ -14,7 +14,7 @@ class TestAtomFeaturiser(object):
         ('C[NH2+]C', ['charge'], [[0], [1], [0]]),
         ('CCO', ['degree'], [[1], [2], [1]]),
         ('CC=O', ['degree'], [[1], [2], [1]]),
-        ('CC=O', ['hybridisation_onehot'], [
+        ('CC=O', ['hybridization_onehot'], [
             [0, 0, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 0, 0, 0]]),
         ('CCO', ['hydrogens'], [[3], [2], [1]]),
         ('CC=O', ['hydrogens'], [[3], [1], [0]]),
