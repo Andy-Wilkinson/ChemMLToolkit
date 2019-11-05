@@ -13,7 +13,7 @@ class AtomFeaturiser:
         - atomic_number: The atomic number (int)
         - charge: The formal charge (int)
         - degree: The number of directly bonded neighbours (int)
-        - hybridisation_onehot: The hydridisation (one-hot)
+        - hybridization_onehot: The hybridization (one-hot)
         - hydrogens: Total number of hydrogen atoms (int)
         - is_aromatic: If the atom is aromatic (0 or 1)
         - is_ring: If the atom is in a ring (0 or 1)
@@ -30,13 +30,13 @@ class AtomFeaturiser:
         features: A list of feature name strings to generate.
         tokens_symbol: List of tokens to use for atom symbols.
             (no default)
-        tokens_hydridisation: List of tokens to use for atom hydridisation.
+        tokens_hybridization: List of tokens to use for atom hybridization.
             (defaults to sp, sp2, sp3, sp3d, sp3d2)
     """
     def __init__(self,
                  features: list,
                  tokens_symbol: list = None,
-                 tokens_hydridisation: list = [
+                 tokens_hybridization: list = [
                      HybridizationType.SP,
                      HybridizationType.SP2,
                      HybridizationType.SP3,
@@ -45,7 +45,7 @@ class AtomFeaturiser:
                  ]):
         self.features = [self._get_feature(feature) for feature in features]
         self.tokens_symbol = tokens_symbol
-        self.tokens_hydridisation = tokens_hydridisation
+        self.tokens_hybridization = tokens_hybridization
 
     def process_atom(self, atom: Atom):
         """Generates features for an individual atom.
@@ -94,8 +94,8 @@ class AtomFeaturiser:
     def _f_charge(self, atom: Atom): return atom.GetFormalCharge()
     def _f_degree(self, atom: Atom): return atom.GetDegree()
 
-    def _f_hybridisation_onehot(self, atom: Atom):
-        return one_hot(atom.GetHybridization(), self.tokens_hydridisation)
+    def _f_hybridization_onehot(self, atom: Atom):
+        return one_hot(atom.GetHybridization(), self.tokens_hybridization)
 
     def _f_hydrogens(self, atom: Atom): return atom.GetTotalNumHs()
     def _f_is_aromatic(self, atom: Atom): return int(atom.GetIsAromatic())
