@@ -34,17 +34,25 @@ class MeanMetricNaN(Metric):
         y_pred = tf.convert_to_tensor(y_pred, self.dtype)
 
         error = self.calculate_error(y_true, y_pred)
+        mask = ~tf.math.is_nan(error)
+        error = tf.ragged.boolean_mask(error, mask)
 
         if self.per_sample:
-            mask = ~tf.math.is_nan(error)
-            error = tf.ragged.boolean_mask(error, mask)
             error = self.transform_mean(tf.reduce_mean(error, axis=-1))
+            count = tf.cast(~tf.math.is_nan(error), tf.float32)
+        else:
+            error = tf.reduce_sum(error, axis=-1)
+            count = tf.reduce_sum(tf.cast(mask, tf.float32), axis=-1)
 
-        error_mask = ~tf.math.is_nan(error)
-        error = tf.boolean_mask(error, error_mask)
+        if sample_weight is not None:
+            sample_weight = tf.cast(sample_weight, self.dtype)
+            error = error * sample_weight
+            count = count * sample_weight
+
+        error = tf.boolean_mask(error, ~tf.math.is_nan(error))
 
         self.total.assign_add(tf.reduce_sum(error))
-        self.count.assign_add(tf.reduce_sum(tf.cast(error_mask, tf.float32)))
+        self.count.assign_add(tf.reduce_sum(count))
 
     def result(self):
         mean = self.total / self.count
