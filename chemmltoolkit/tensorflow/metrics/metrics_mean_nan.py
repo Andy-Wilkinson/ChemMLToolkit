@@ -69,6 +69,11 @@ class MeanMetricNaN(Metric):
 
 class MeanAbsoluteErrorNaN(MeanMetricNaN):
     """Computes the mean absolute error, masking any NaN values in `y_true`.
+    Arguments:
+        per_sample: If false (the default), the error is calculated over all
+            individual values. If true, the error is calculated for each
+            sample individually, and the overall mean of these errors is
+            returned.
     """
     def __init__(self,
                  per_sample=False,
@@ -83,6 +88,11 @@ class MeanAbsoluteErrorNaN(MeanMetricNaN):
 
 class MeanSquaredErrorNaN(MeanMetricNaN):
     """Computes the mean squared error, masking any NaN values in `y_true`.
+    Arguments:
+        per_sample: If false (the default), the error is calculated over all
+            individual values. If true, the error is calculated for each
+            sample individually, and the overall mean of these errors is
+            returned.
     """
     def __init__(self,
                  per_sample=False,
@@ -98,6 +108,11 @@ class MeanSquaredErrorNaN(MeanMetricNaN):
 class RootMeanSquaredErrorNaN(MeanMetricNaN):
     """Computes the root mean squared error, masking any NaN values in
     `y_true`.
+    Arguments:
+        per_sample: If false (the default), the error is calculated over all
+            individual values. If true, the error is calculated for each
+            sample individually, and the overall mean of these errors is
+            returned.
     """
     def __init__(self,
                  per_sample=False,
