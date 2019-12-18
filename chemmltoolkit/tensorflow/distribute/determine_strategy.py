@@ -1,30 +1,28 @@
 import tensorflow as tf
-from tensorflow.distribute.cluster_resolver import TPUClusterResolver
-from tensorflow.distribute import MirroredStrategy
-from tensorflow.distribute.experimental import TPUStrategy
 
 
 def determine_strategy(allow_cpu=False, allow_tpu=True):
     tpu = None
     if allow_tpu:
         try:
-            tpu = TPUClusterResolver()
+            tpu = tf.distribute.cluster_resolver.TPUClusterResolver()
         except ValueError:
             pass
 
     if tpu:
         tf.config.experimental_connect_to_cluster(tpu)
         tf.tpu.experimental.initialize_tpu_system(tpu)
-        strategy = TPUStrategy(tpu)
+        strategy = tf.distribute.experimental.TPUStrategy(tpu)
         strategy_type = 'tpu'
         print('Running on TPU ', tpu.cluster_spec().as_dict()['worker'])
 
     else:
         gpus = tf.config.experimental.list_logical_devices("GPU")
         if len(gpus) > 1:
-            strategy = MirroredStrategy([gpu.name for gpu in gpus])
+            gpu_names = [gpu.name for gpu in gpus]
+            strategy = tf.distribute.MirroredStrategy(gpu_names)
             strategy_type = 'gpu'
-            print('Running on multiple GPUs ', [gpu.name for gpu in gpus])
+            print('Running on multiple GPUs ', gpu_names)
         elif len(gpus) == 1:
             strategy = tf.distribute.get_strategy()
             strategy_type = 'gpu'
