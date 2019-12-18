@@ -15,11 +15,12 @@ def mean_absolute_error_nan(y_true, y_pred):
     y_true = tf.cast(y_true, y_pred.dtype)
 
     mask = ~tf.math.is_nan(y_true)
-    y_true = tf.ragged.boolean_mask(y_true, mask)
-    y_pred = tf.ragged.boolean_mask(y_pred, mask)
+    y_true = tf.where(mask, y_true, 0.0)
+    y_pred = tf.where(mask, y_pred, 0.0)
 
-    loss = tf.reduce_mean(tf.abs(y_pred - y_true), axis=-1)
-    loss = tf.where(tf.math.is_nan(loss), 0.0, loss)
+    error = tf.reduce_sum(tf.abs(y_pred - y_true), axis=-1)
+    count = tf.reduce_sum(tf.cast(mask, y_pred.dtype), axis=-1)
+    loss = tf.math.divide_no_nan(error, count)
     return loss
 
 
