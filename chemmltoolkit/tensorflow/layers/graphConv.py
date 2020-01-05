@@ -93,7 +93,7 @@ class GraphConv(Layer):
             raise ValueError('The `num_bases` property must not be set if ' +
                              '`graph_regularization` is None.')
 
-        if num_bases <= 0:
+        if num_bases is not None and num_bases <= 0:
             raise ValueError('The `num_bases` property must be a positive ' +
                              'integer.')
 
@@ -254,6 +254,7 @@ class GraphConv(Layer):
             weights = tf.matmul(self.kernel_coef, weights)
             weights = tf.reshape(weights, (self.adjacency_count,
                                  self.num_node_features, self.units))
+            return weights
         else:
             return self.kernel
 
