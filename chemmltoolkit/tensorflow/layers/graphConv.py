@@ -23,10 +23,6 @@ class GraphConv(Layer):
         aggregation_method: Specifies the method to use when combining outputs
             if multiple adjacency matricies are specified ('concat', 'sum' or
             'max').
-        add_adjacency_self_loops: Boolean, whether to add self loops
-            to the adjacency matrix.
-        normalize_adjacency_matrix: Boolean, whether to normalize the
-            adjacency matrix.
         kernel_initializer: Initializer for the `kernel` weights matrix.
         bias_initializer: Initializer for the bias vector.
         kernel_regularizer: Regularizer function applied to
@@ -53,8 +49,6 @@ class GraphConv(Layer):
                  activation='relu',
                  use_bias=True,
                  aggregation_method='sum',
-                 add_adjacency_self_loops=False,
-                 normalize_adjacency_matrix=False,
                  kernel_initializer='glorot_uniform',
                  bias_initializer='zeros',
                  kernel_regularizer=None,
@@ -70,8 +64,6 @@ class GraphConv(Layer):
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.aggregation_method = aggregation_method
-        self.add_adjacency_self_loops = add_adjacency_self_loops
-        self.normalize_adjacency_matrix = normalize_adjacency_matrix
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
@@ -152,12 +144,6 @@ class GraphConv(Layer):
         features = tf.convert_to_tensor(inputs[0])
         adjacency = tf.convert_to_tensor(inputs[1])
 
-        # Add self-loops and normalize the adjacency matrices if required
-        adjacency = self.preprocess_adjacency_matrices(
-            adjacency,
-            add_adjacency_self_loops=self.add_adjacency_self_loops,
-            normalize_adjacency_matrix=self.normalize_adjacency_matrix)
-
         all_outputs = [self._call_convolution(features, adjacency[:, i], i)
                        for i in range(self.adjacency_count)]
 
@@ -218,32 +204,3 @@ class GraphConv(Layer):
         }
         base_config = super(GraphConv, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-    @staticmethod
-    def preprocess_adjacency_matrices(adjacency,
-                                      add_adjacency_self_loops=False,
-                                      normalize_adjacency_matrix=False):
-        """Preprocesses the adjacency matrices.
-
-        Note you should set the corresponding flags to False in the
-        GraphConv layer initialiser if they have already been
-        preprocessed.
-
-        Args:
-            adjacency: The adjacency matrices to process.
-            add_adjacency_self_loops: Boolean, whether to add self loops
-                to the adjacency matrix.
-            normalize_adjacency_matrix: Boolean, whether to normalize the
-                adjacency matrix.
-
-        Returns:
-            The processed adjacency matrices.
-        """
-        if add_adjacency_self_loops:
-            ones = tf.ones_like(adjacency)[:, :, 0]
-            adjacency = tf.linalg.set_diag(adjacency, ones)
-        if normalize_adjacency_matrix:
-            degree_inverse = tf.linalg.diag(1/tf.reduce_sum(adjacency, axis=2))
-            adjacency = tf.matmul(degree_inverse, adjacency)
-
-        return adjacency
