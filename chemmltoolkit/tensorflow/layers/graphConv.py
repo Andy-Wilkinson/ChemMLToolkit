@@ -105,26 +105,31 @@ class GraphConv(Layer):
                              tensor_shape.dimension_value(features_shape[-2]))
 
         # Define the input spec
-        last_dim = tensor_shape.dimension_value(features_shape[-1])
-        adjacency_dim = tensor_shape.dimension_value(adjacency_shape[2])
-        self.adjacency_count = tensor_shape.dimension_value(adjacency_shape[1])
+        self.num_node_features = tensor_shape.dimension_value(
+            features_shape[-1])
+        self.num_nodes = tensor_shape.dimension_value(adjacency_shape[2])
+        self.num_edge_features = tensor_shape.dimension_value(
+            adjacency_shape[1])
+
         self.input_spec = [
-            InputSpec(min_ndim=2, axes={-1: last_dim, -2: adjacency_dim}),
+            InputSpec(min_ndim=2, axes={
+                -1: self.num_node_features,
+                -2: self.num_nodes}),
             InputSpec(ndim=4, axes={
-                1: self.adjacency_count,
-                2: adjacency_dim,
-                3: adjacency_dim})
+                1: self.num_edge_features,
+                2: self.num_nodes,
+                3: self.num_nodes})
         ]
 
         # Add weights
         self.kernel = [self.add_weight(
                        f'kernel_{i}',
-                       shape=[last_dim, self.units],
+                       shape=[self.num_node_features, self.units],
                        initializer=self.kernel_initializer,
                        regularizer=self.kernel_regularizer,
                        constraint=self.kernel_constraint,
                        dtype=self.dtype,
-                       trainable=True) for i in range(self.adjacency_count)]
+                       trainable=True) for i in range(self.num_edge_features)]
 
         if self.use_bias:
             self.bias = [self.add_weight(
@@ -134,7 +139,8 @@ class GraphConv(Layer):
                          regularizer=self.bias_regularizer,
                          constraint=self.bias_constraint,
                          dtype=self.dtype,
-                         trainable=True) for i in range(self.adjacency_count)]
+                         trainable=True)
+                         for i in range(self.num_edge_features)]
         else:
             self.bias = None
 
@@ -145,7 +151,7 @@ class GraphConv(Layer):
         adjacency = tf.convert_to_tensor(inputs[1])
 
         all_outputs = [self._call_convolution(features, adjacency[:, i], i)
-                       for i in range(self.adjacency_count)]
+                       for i in range(self.num_edge_features)]
 
         if self.aggregation_method == 'concat':
             return tf.concat(all_outputs, axis=2)
