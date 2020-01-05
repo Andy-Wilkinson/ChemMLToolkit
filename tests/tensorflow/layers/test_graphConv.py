@@ -33,7 +33,7 @@ class TestGraphConv(tf.test.TestCase):
 
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
-                        kernel_initializer='identity')
+                        kernel_initializer=initializer_identitiy_3d)
 
     def test_call_adjacency_concat(self):
         input_features = [
@@ -62,7 +62,7 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='concat',
-                        kernel_initializer='identity')
+                        kernel_initializer=initializer_identitiy_3d)
 
     def test_call_adjacency_sum(self):
         input_features = [
@@ -87,7 +87,7 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='sum',
-                        kernel_initializer='identity')
+                        kernel_initializer=initializer_identitiy_3d)
 
     def test_call_adjacency_max(self):
         input_features = [
@@ -112,7 +112,7 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='max',
-                        kernel_initializer='identity')
+                        kernel_initializer=initializer_identitiy_3d)
 
     def _test_call(self, input, expected_output, **kwargs):
         input = [np.array(i) for i in input]
@@ -123,3 +123,9 @@ class TestGraphConv(tf.test.TestCase):
 
         self.assertAllEqual(expected_output, output)
         self.assertAllEqual(output.shape, computed_shape)
+
+
+def initializer_identitiy_3d(shape, dtype=None):
+    identity = tf.eye(shape[1], shape[2], dtype=dtype)
+    identity = tf.reshape(identity, (1, shape[1], shape[2]))
+    return tf.repeat(identity, shape[0], axis=0)
