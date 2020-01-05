@@ -128,4 +128,4 @@ class TestGraphConv(tf.test.TestCase):
 def initializer_identitiy_3d(shape, dtype=None):
     identity = tf.eye(shape[1], shape[2], dtype=dtype)
     identity = tf.reshape(identity, (1, shape[1], shape[2]))
-    return tf.repeat(identity, shape[0], axis=0)
+    return tf.tile(identity, (shape[0], 1, 1))
