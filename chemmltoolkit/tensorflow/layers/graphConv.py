@@ -152,7 +152,7 @@ class GraphConv(Layer):
                 and self.num_bases > \
                 tensor_shape.dimension_value(adjacency_shape[1]):
             raise ValueError('The adjacency matrix (second input) passed to ' +
-                             '`GraphConv` must not have less adjacency' +
+                             '`GraphConv` must not have less adjacency ' +
                              'matricies than `num_bases`.')
 
         # Define the input spec
@@ -252,7 +252,7 @@ class GraphConv(Layer):
             weights = tf.reshape(self.kernel, (self.num_bases,
                                  self.num_node_features * self.units))
             weights = tf.matmul(self.kernel_coef, weights)
-            weights = tf.reshape(weights, (self.adjacency_count,
+            weights = tf.reshape(weights, (self.num_edge_features,
                                  self.num_node_features, self.units))
             return weights
         else:
