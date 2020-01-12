@@ -115,7 +115,8 @@ class TestGraphConv(tf.test.TestCase):
                         kernel_initializer=initializer_identitiy_3d)
 
     def _test_call(self, input, expected_output, **kwargs):
-        input = [np.array(i) for i in input]
+        input = [tf.convert_to_tensor(np.array(i), dtype=tf.float32)
+                 for i in input]
         graphConv = GraphConv(**kwargs)
         computed_shape = graphConv.compute_output_shape(
             [input[0].shape, input[1].shape])

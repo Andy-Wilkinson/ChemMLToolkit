@@ -177,7 +177,7 @@ class GraphConv(Layer):
             self.num_edge_features
 
         self.kernel = self.add_weight(
-                       f'kernel',
+                       'kernel',
                        shape=[num_kernels,
                               self.num_node_features,
                               self.units],
@@ -189,7 +189,7 @@ class GraphConv(Layer):
 
         if self.graph_regularization:
             self.kernel_coef = self.add_weight(
-                       f'kernel_coef',
+                       'kernel_coef',
                        shape=[self.num_edge_features,
                               self.num_bases],
                        initializer=self.kernel_coef_initializer,
@@ -199,15 +199,14 @@ class GraphConv(Layer):
                        trainable=True)
 
         if self.use_bias:
-            self.bias = [self.add_weight(
-                         f'bias_{i}',
-                         shape=[self.units, ],
-                         initializer=self.bias_initializer,
-                         regularizer=self.bias_regularizer,
-                         constraint=self.bias_constraint,
-                         dtype=self.dtype,
-                         trainable=True)
-                         for i in range(self.num_edge_features)]
+            self.bias = self.add_weight(
+                        'bias',
+                        shape=[self.units, ],
+                        initializer=self.bias_initializer,
+                        regularizer=self.bias_regularizer,
+                        constraint=self.bias_constraint,
+                        dtype=self.dtype,
+                        trainable=True)
         else:
             self.bias = None
 
@@ -217,29 +216,26 @@ class GraphConv(Layer):
         features = tf.convert_to_tensor(inputs[0])
         adjacency = tf.convert_to_tensor(inputs[1])
 
-        all_outputs = [self._call_convolution(features, adjacency[:, i], i)
-                       for i in range(self.num_edge_features)]
+        weights = self._get_weight_matrix()
+
+        outputs = tf.matmul(adjacency, tf.expand_dims(features, 1))
+        outputs = tf.matmul(outputs, weights)
 
         if self.aggregation_method == 'concat':
-            return tf.concat(all_outputs, axis=2)
+            outputs = tf.transpose(outputs, (0, 2, 1, 3))
+            outputs_shape = tf.shape(outputs)
+            outputs = tf.reshape(outputs,
+                                 (outputs_shape[0], outputs_shape[1], -1))
         elif self.aggregation_method == 'sum':
-            return tf.reduce_sum(all_outputs, axis=0)
+            outputs = tf.reduce_sum(outputs, axis=1)
         elif self.aggregation_method == 'max':
-            return tf.reduce_max(all_outputs, axis=0)
+            outputs = tf.reduce_max(outputs, axis=1)
         else:
             raise ValueError('Undefined aggregation method' +
                              f'`{self.aggregation_method}`.')
 
-    def _call_convolution(self, features, adjacency, index):
-        # Apply the adjacency matrix
-        # NB: Do 'tensordot' rather than 'matmul' as W is not
-        # broadcasted across batches
-        outputs = tf.matmul(adjacency, features)
-        weights = self._get_weight_matrix()
-        outputs = tf.tensordot(outputs, weights[index], axes=1)
-
         if self.use_bias:
-            outputs = nn.bias_add(outputs, self.bias[index])
+            outputs = nn.bias_add(outputs, self.bias)
         if self.activation is not None:
             outputs = self.activation(outputs)  # pylint: disable=not-callable
 
@@ -276,17 +272,23 @@ class GraphConv(Layer):
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
             'aggregation_method': self.aggregation_method,
-            'add_adjacency_self_loops': self.add_adjacency_self_loops,
-            'normalize_adjacency_matrix': self.normalize_adjacency_matrix,
+            'graph_regularization': self.graph_regularization,
+            'num_bases': self.num_bases,
             'kernel_initializer':
                 initializers.serialize(self.kernel_initializer),
+            'kernel_coef_initializer':
+                initializers.serialize(self.kernel_coef_initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer':
                 regularizers.serialize(self.kernel_regularizer),
+            'kernel_coef_regularizer':
+                regularizers.serialize(self.kernel_coef_regularizer),
             'bias_regularizer': regularizers.serialize(self.bias_regularizer),
             'activity_regularizer':
                 regularizers.serialize(self.activity_regularizer),
             'kernel_constraint': constraints.serialize(self.kernel_constraint),
+            'kernel_coef_constraint':
+                constraints.serialize(self.kernel_coef_constraint),
             'bias_constraint': constraints.serialize(self.bias_constraint)
         }
         base_config = super(GraphConv, self).get_config()
