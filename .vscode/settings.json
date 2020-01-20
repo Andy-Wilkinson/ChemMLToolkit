@@ -2,8 +2,14 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "C:\\Users\\AndyW\\Miniconda3\\envs\\chemmltoolkit\\python.exe",
+    "python.pythonPath": "/home/andrew/miniconda3/envs/chemmltoolkit/bin/python",
     "editor.rulers": [
         79
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
 }
