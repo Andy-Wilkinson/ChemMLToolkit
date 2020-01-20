@@ -38,3 +38,19 @@ class TestAdjacencyOpsTf(tf.test.TestCase):
 
         result = adjacency_ops.normalise(input)
         self.assertAllEqual(expected_result, result)
+
+    def test_normalise_zeros(self):
+        input = tf.convert_to_tensor(
+            [
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            ], dtype=tf.float32)
+
+        expected_result = tf.convert_to_tensor(
+            [
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            ], dtype=tf.float32)
+
+        result = adjacency_ops.normalise(input)
+        self.assertAllEqual(expected_result, result)
