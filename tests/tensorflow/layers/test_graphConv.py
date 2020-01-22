@@ -1,10 +1,73 @@
 import numpy as np
 import tensorflow as tf
 from chemmltoolkit.tensorflow.layers import GraphConv
+from chemmltoolkit.tensorflow.processing import adjacency_ops
+from tests.test_utils.math import Σ, Σneighbours
+from tests.test_utils.math import generate_random_node_features
+from tests.test_utils.math import generate_random_adjacency
 
 
 class TestGraphConv(tf.test.TestCase):
-    # The same graph structure is used for most tests.
+    def test_implementation_relationalgcn(self):
+        self._test_implementation_relationalgcn()
+
+    def _test_implementation_relationalgcn(self):
+        # Literature reference for relational GCNs
+        # "Modeling Relational Data with Graph Convolutional Networks"
+        # (https://arxiv.org/abs/1703.06103)
+
+        num_units = 8
+        num_batches = 3
+        num_nodes = 10
+        num_node_features = 4
+        num_edge_features = 5
+
+        random = np.random.RandomState(seed=42)
+        in_features = generate_random_node_features(random,
+                                                    num_batches,
+                                                    num_nodes,
+                                                    num_node_features)
+        in_adjacency = generate_random_adjacency(random,
+                                                 num_batches,
+                                                 num_nodes,
+                                                 num_edge_features)
+
+        # ChemMLToolkit implementation
+
+        graphConv = GraphConv(num_units, use_bias=False)
+
+        tensor_features = tf.convert_to_tensor(in_features, dtype=tf.float32)
+        tensor_adjacency = tf.convert_to_tensor(in_adjacency, dtype=tf.float32)
+
+        tensor_adjacency = adjacency_ops.normalise(tensor_adjacency)
+
+        graphConv.build([tensor_features.shape, tensor_adjacency.shape])
+        graphConv_out = graphConv([tensor_features, tensor_adjacency])
+
+        # Literature reference implementation
+        # Equation 2 defines the RGCN layer
+
+        W = np.transpose(graphConv.kernel.numpy(), (0, 2, 1))
+        W0 = np.zeros((num_units, num_node_features))
+
+        activation = lambda x: np.maximum(x, 0)  # noqa: E731
+        c = lambda adj, i, r: np.sum(adj[r][i])  # noqa: E731
+        h_lplus1 = lambda i, h_l, adj: (  # noqa: E731
+            activation(Σ((0, num_edge_features), lambda r:
+                         Σneighbours(adj[r], i, lambda j:
+                                     (1.0/c(adj, i, r))
+                                     * np.matmul(W[r], h_l[j])))
+                       + np.matmul(W0, h_l[i])))
+
+        np_out = [[h_lplus1(atom_idx, in_features[batch], in_adjacency[batch])
+                  for atom_idx in range(num_nodes)]
+                  for batch in range(num_batches)]
+
+        # Check equivalence
+
+        self.assertAllClose(graphConv_out, np_out)
+
+    # The same graph structure is used for most of the following tests.
     # There are two examples per batch, each with three nodes.
     #
     # Example 1:
