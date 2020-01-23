@@ -20,6 +20,8 @@ class GraphConv(Layer):
         activation: Activation function to use.
             If you don't specify anything, RELU activation is applied.
         use_bias: Boolean, whether the layer uses a bias vector.
+        add_self_loops: Boolean, whether to add a separate weight matrix
+            for self loops.
         aggregation_method: Specifies the method to use when combining outputs
             if multiple adjacency matricies are specified ('concat', 'sum' or
             'max').
@@ -63,6 +65,7 @@ class GraphConv(Layer):
                  units,
                  activation='relu',
                  use_bias=True,
+                 add_self_loops=False,
                  aggregation_method='sum',
                  graph_regularization=None,
                  num_bases=None,
@@ -100,6 +103,7 @@ class GraphConv(Layer):
         self.units = int(units)
         self.activation = activations.get(activation)
         self.use_bias = use_bias
+        self.add_self_loops = add_self_loops
         self.aggregation_method = aggregation_method
         self.graph_regularization = graph_regularization
         self.num_bases = num_bases
@@ -173,8 +177,10 @@ class GraphConv(Layer):
         ]
 
         # Add weights
+        num_self_loops = 1 if self.add_self_loops else 0
+        self.num_weights = self.num_edge_features + num_self_loops
         num_kernels = self.num_bases if self.graph_regularization else \
-            self.num_edge_features
+            self.num_weights
 
         self.kernel = self.add_weight(
                        'kernel',
@@ -190,7 +196,7 @@ class GraphConv(Layer):
         if self.graph_regularization:
             self.kernel_coef = self.add_weight(
                        'kernel_coef',
-                       shape=[self.num_edge_features,
+                       shape=[self.num_weights,
                               self.num_bases],
                        initializer=self.kernel_coef_initializer,
                        regularizer=self.kernel_coef_regularizer,
@@ -218,7 +224,12 @@ class GraphConv(Layer):
 
         weights = self._get_weight_matrix()
 
-        outputs = tf.matmul(adjacency, tf.expand_dims(features, 1))
+        features = tf.expand_dims(features, 1)
+        outputs = tf.matmul(adjacency, features)
+
+        if self.add_self_loops:
+            outputs = tf.concat([features, outputs], 1)
+
         outputs = tf.matmul(outputs, weights)
 
         if self.aggregation_method == 'concat':
@@ -248,7 +259,7 @@ class GraphConv(Layer):
             weights = tf.reshape(self.kernel, (self.num_bases,
                                  self.num_node_features * self.units))
             weights = tf.matmul(self.kernel_coef, weights)
-            weights = tf.reshape(weights, (self.num_edge_features,
+            weights = tf.reshape(weights, (self.num_weights,
                                  self.num_node_features, self.units))
             return weights
         else:
@@ -271,6 +282,7 @@ class GraphConv(Layer):
             'units': self.units,
             'activation': activations.serialize(self.activation),
             'use_bias': self.use_bias,
+            'add_self_loops': self.add_self_loops,
             'aggregation_method': self.aggregation_method,
             'graph_regularization': self.graph_regularization,
             'num_bases': self.num_bases,

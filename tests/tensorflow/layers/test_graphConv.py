@@ -9,9 +9,12 @@ from tests.test_utils.math import generate_random_adjacency
 
 class TestGraphConv(tf.test.TestCase):
     def test_implementation_relationalgcn(self):
-        self._test_implementation_relationalgcn()
+        self._test_implementation_relationalgcn(add_self_loops=False)
 
-    def _test_implementation_relationalgcn(self):
+    def test_implementation_relationalgcn_withselfloops(self):
+        self._test_implementation_relationalgcn(add_self_loops=True)
+
+    def _test_implementation_relationalgcn(self, add_self_loops):
         # Literature reference for relational GCNs
         # "Modeling Relational Data with Graph Convolutional Networks"
         # (https://arxiv.org/abs/1703.06103)
@@ -34,7 +37,9 @@ class TestGraphConv(tf.test.TestCase):
 
         # ChemMLToolkit implementation
 
-        graphConv = GraphConv(num_units, use_bias=False)
+        graphConv = GraphConv(num_units,
+                              use_bias=False,
+                              add_self_loops=add_self_loops)
 
         tensor_features = tf.convert_to_tensor(in_features, dtype=tf.float32)
         tensor_adjacency = tf.convert_to_tensor(in_adjacency, dtype=tf.float32)
@@ -48,7 +53,11 @@ class TestGraphConv(tf.test.TestCase):
         # Equation 2 defines the RGCN layer
 
         W = np.transpose(graphConv.kernel.numpy(), (0, 2, 1))
-        W0 = np.zeros((num_units, num_node_features))
+
+        if add_self_loops:
+            W0, W = W[0], W[1:]
+        else:
+            W0 = np.zeros((num_units, num_node_features))
 
         activation = lambda x: np.maximum(x, 0)  # noqa: E731
         c = lambda adj, i, r: np.sum(adj[r][i])  # noqa: E731
