@@ -220,7 +220,11 @@ class GraphConv(Layer):
 
     def call(self, inputs):
         features = tf.convert_to_tensor(inputs[0])
-        adjacency = tf.convert_to_tensor(inputs[1])
+        is_sparse_adjacency = isinstance(inputs[1], tf.sparse.SparseTensor)
+        if is_sparse_adjacency:
+            adjacency = tf.sparse.to_dense(inputs[1])
+        else:
+            adjacency = tf.convert_to_tensor(inputs[1])
 
         weights = self._get_weight_matrix()
 

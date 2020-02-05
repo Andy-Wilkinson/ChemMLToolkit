@@ -9,12 +9,21 @@ from tests.test_utils.math import generate_random_adjacency
 
 class TestGraphConv(tf.test.TestCase):
     def test_implementation_relationalgcn(self):
-        self._test_implementation_relationalgcn(add_self_loops=False)
+        self._test_implementation_relationalgcn()
 
     def test_implementation_relationalgcn_withselfloops(self):
         self._test_implementation_relationalgcn(add_self_loops=True)
 
-    def _test_implementation_relationalgcn(self, add_self_loops):
+    def test_implementation_relationalgcn_sparseadjacency(self):
+        self._test_implementation_relationalgcn(sparse_adjacency=True)
+
+    def test_implementation_relationalgcn_sparseadjacency_withselfloops(self):
+        self._test_implementation_relationalgcn(add_self_loops=True,
+                                                sparse_adjacency=True)
+
+    def _test_implementation_relationalgcn(self,
+                                           add_self_loops=False,
+                                           sparse_adjacency=False):
         # Literature reference for relational GCNs
         # "Modeling Relational Data with Graph Convolutional Networks"
         # (https://arxiv.org/abs/1703.06103)
@@ -45,6 +54,9 @@ class TestGraphConv(tf.test.TestCase):
         tensor_adjacency = tf.convert_to_tensor(in_adjacency, dtype=tf.float32)
 
         tensor_adjacency = adjacency_ops.normalise(tensor_adjacency)
+
+        if sparse_adjacency:
+            tensor_adjacency = tf.sparse.from_dense(tensor_adjacency)
 
         graphConv.build([tensor_features.shape, tensor_adjacency.shape])
         graphConv_out = graphConv([tensor_features, tensor_adjacency])
