@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 from chemmltoolkit.tensorflow.layers import GraphConv
 from chemmltoolkit.tensorflow.processing import adjacency_ops
-from tests.test_utils.math import Σ, Σneighbours
-from tests.test_utils.math import generate_random_node_features
-from tests.test_utils.math import generate_random_adjacency
+from tests.test_utils.math_utils import Σ, Σneighbours
+from tests.test_utils.math_utils import generate_random_node_features
+from tests.test_utils.math_utils import generate_random_adjacency
 
 
 class TestGraphConv(tf.test.TestCase):
