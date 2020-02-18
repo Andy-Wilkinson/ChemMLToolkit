@@ -17,6 +17,14 @@ class TestBondFeaturiser(object):
             (1, 2, [1, 0, 0, 0])]),
 
         # Tests for individual features
+        ('CC=O', [bf.index], [
+            (0, 1, [0]), (1, 2, [1])]),
+        ('CC1CCCCC1', [bf.is_aromatic],  [
+            (0, 1, [0]), (1, 2, [0]), (2, 3, [0]), (3, 4, [0]),
+            (4, 5, [0]), (5, 6, [0]), (6, 1, [0])]),
+        ('Cc1ccccc1', [bf.is_aromatic],  [
+            (0, 1, [0]), (1, 2, [1]), (2, 3, [1]), (3, 4, [1]),
+            (4, 5, [1]), (5, 6, [1]), (6, 1, [1])]),
         ('CC=CC(=O)C', [bf.is_conjugated],  [
             (0, 1, [0]), (1, 2, [1]), (2, 3, [1]), (3, 4, [1]),
             (3, 5, [0])]),
@@ -47,6 +55,17 @@ class TestBondFeaturiser(object):
         ('CC1CCCCCC1', [bf.is_ringsize(7)],  [
             (0, 1, [0]), (1, 2, [1]), (2, 3, [1]), (3, 4, [1]),
             (4, 5, [1]), (5, 6, [1]), (6, 7, [1]), (7, 1, [1])]),
+        ('CC=O', [bf.order], [
+            (0, 1, [1.0]), (1, 2, [2.0])]),
+        ('Cc1ccccc1', [bf.order],  [
+            (0, 1, [1.0]), (1, 2, [1.5]), (2, 3, [1.5]), (3, 4, [1.5]),
+            (4, 5, [1.5]), (5, 6, [1.5]), (6, 1, [1.5])]),
+        ('CC=CC', [feat.one_hot(bf.stereochemistry)], [
+            (0, 1, [1, 0, 0, 0]), (1, 2, [1, 0, 0, 0]), (2, 3, [1, 0, 0, 0])]),
+        ('C/C=C/C', [feat.one_hot(bf.stereochemistry)], [
+            (0, 1, [1, 0, 0, 0]), (1, 2, [0, 0, 0, 1]), (2, 3, [1, 0, 0, 0])]),
+        ('C/C=C\\C', [feat.one_hot(bf.stereochemistry)], [
+            (0, 1, [1, 0, 0, 0]), (1, 2, [0, 0, 1, 0]), (2, 3, [1, 0, 0, 0])]),
 
         # Tests for multiple features
         ('C1C(=O)C1', [feat.one_hot(bf.bond_type), bf.is_ring], [

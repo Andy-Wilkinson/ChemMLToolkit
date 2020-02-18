@@ -11,6 +11,8 @@ class TestMoleculeFeaturiser(object):
         ('CCO', [mf.rdkit('MolLogP')], [-0.0014000000000000123]),
         ('CCO', [mf.molwt], [46.069]),
         ('CCO', [mf.rdkit('MolWt')], [46.069]),
+        ('CCO', [mf.num_atoms], [3]),
+        ('CCO', [mf.num_bonds], [2]),
         ('NCCO', [mf.num_h_donors], [2]),
         ('NCCO', [mf.num_h_acceptors], [2]),
         ('CCO', [mf.num_heavy_atoms], [3]),

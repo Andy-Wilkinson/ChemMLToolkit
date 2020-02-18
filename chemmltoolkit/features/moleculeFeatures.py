@@ -120,31 +120,43 @@ def fingerprint_morgan(radius, fpSize=2048, count=False):
         return _fingerprint_fn_bits(generator)
 
 
-def logp(mol: Mol):
+def logp(mol: Mol) -> float:
     """Calculated LogP (float).
     """
     return Desc.MolLogP(mol)
 
 
-def molwt(mol: Mol):
+def molwt(mol: Mol) -> float:
     """Molecular weight (float).
     """
     return Desc.MolWt(mol)
 
 
-def num_h_donors(mol: Mol):
+def num_atoms(mol: Mol) -> int:
+    """Total number of atoms (int).
+    """
+    return mol.GetNumAtoms()
+
+
+def num_bonds(mol: Mol) -> int:
+    """Total number of bonds (int).
+    """
+    return mol.GetNumBonds()
+
+
+def num_h_donors(mol: Mol) -> int:
     """Number of hydrogen bond donors (int).
     """
     return Desc.NumHDonors(mol)
 
 
-def num_h_acceptors(mol: Mol):
+def num_h_acceptors(mol: Mol) -> int:
     """Number of hydrogen bond acceptors (int).
     """
     return Desc.NumHAcceptors(mol)
 
 
-def num_heavy_atoms(mol: Mol):
+def num_heavy_atoms(mol: Mol) -> int:
     """Number of heavy atoms (int).
     """
     return Desc.HeavyAtomCount(mol)
@@ -167,7 +179,7 @@ def rdkit(name: str):
     return _rdkit
 
 
-def tpsa(mol: Mol):
+def tpsa(mol: Mol) -> float:
     """Total polar surface area (float)
     """
     return Desc.TPSA(mol)
