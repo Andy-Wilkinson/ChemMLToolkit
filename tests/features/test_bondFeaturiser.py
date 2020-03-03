@@ -81,8 +81,10 @@ class TestBondFeaturiser(object):
         featuriser = BondFeaturiser(feature_fns)
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
+        feature_lengths = featuriser.get_feature_lengths()
         assert features == expected_output
-        assert featuriser.get_feature_length() == len(expected_output[0][2])
+        assert len(feature_lengths) == len(feature_fns)
+        assert sum(feature_lengths) == len(expected_output[0][2])
 
     @pytest.mark.parametrize("smiles_input,feature_fns,expected_output", [
         # We assume RDKit retains atom ordering from SMILEs
@@ -122,3 +124,38 @@ class TestBondFeaturiser(object):
         mol = Chem.MolFromSmiles(smiles_input)
         adjacency_matricies = featuriser.generate_adjacency_matricies(mol)
         assert (adjacency_matricies == expected_output).all()
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for individual features
+        ([bf.is_aromatic], ['is_aromatic']),
+        ([bf.is_ring], ['is_ring']),
+        ([bf.is_ringsize(3)], ['is_ringsize(3)']),
+        ([feat.one_hot(bf.bond_type)],
+            ['one_hot(bond_type, tokens=[SINGLE,DOUBLE,TRIPLE,AROMATIC])']),
+        # Tests for multiple features
+        ([bf.is_aromatic, bf.is_ring], ['is_aromatic', 'is_ring']),
+    ])
+    def test_get_feature_names(self,
+                               feature_fns,
+                               expected_output):
+        featuriser = BondFeaturiser(feature_fns)
+        feature_info = featuriser.get_feature_names()
+        assert feature_info == expected_output
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for multiple features
+        ([bf.is_aromatic, bf.is_ringsize(3), feat.one_hot(bf.bond_type)],
+            [
+                'is_aromatic',
+                'is_ringsize(3)',
+                'one_hot(bond_type)[SINGLE]',
+                'one_hot(bond_type)[DOUBLE]',
+                'one_hot(bond_type)[TRIPLE]',
+                'one_hot(bond_type)[AROMATIC]']),
+    ])
+    def test_get_feature_keys(self,
+                              feature_fns,
+                              expected_output):
+        featuriser = BondFeaturiser(feature_fns)
+        feature_names = featuriser.get_feature_keys()
+        assert feature_names == expected_output

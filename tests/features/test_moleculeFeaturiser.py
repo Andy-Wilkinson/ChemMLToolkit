@@ -28,8 +28,10 @@ class TestMoleculeFeaturiser(object):
         featuriser = MoleculeFeaturiser(feature_fns)
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
+        feature_lengths = featuriser.get_feature_lengths()
         assert features == expected_output
-        assert featuriser.get_feature_length() == len(expected_output)
+        assert len(feature_lengths) == len(feature_fns)
+        assert sum(feature_lengths) == len(expected_output)
 
     @pytest.mark.parametrize("smiles_input,feature_fns,length,mx,mn", [
         # Tests for individual features
@@ -53,7 +55,7 @@ class TestMoleculeFeaturiser(object):
         assert len(features) == length
         assert max(features) == mx
         assert min(features) == mn
-        assert featuriser.get_feature_length() == length
+        assert featuriser.get_feature_lengths()[0] == length
 
     def test_process_all_rdkit(self):
         featuriser = MoleculeFeaturiser(mf.all_rdkit())
@@ -63,3 +65,48 @@ class TestMoleculeFeaturiser(object):
         assert features[0] == 8.08625
         assert features[50] == 0.0
         assert features[100] == 0
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for individual features
+        ([mf.logp], ['logp']),
+        ([mf.molwt], ['molwt']),
+        ([mf.rdkit('Kappa1')], ['rdkit(Kappa1)']),
+        ([mf.fingerprint_atompair()],
+            ['fingerprint_atompair(fpSize=2048,count=False)']),
+        ([mf.fingerprint_atompair(count=True)],
+            ['fingerprint_atompair(fpSize=2048,count=True)']),
+        ([mf.fingerprint_morgan(2)],
+            ['fingerprint_morgan(radius=2,fpSize=2048,count=False)']),
+        ([mf.fingerprint_morgan(2, count=True)],
+            ['fingerprint_morgan(radius=2,fpSize=2048,count=True)']),
+        # Tests for multiple features
+        ([mf.logp, mf.molwt], ['logp', 'molwt']),
+    ])
+    def test_get_feature_names(self,
+                               feature_fns,
+                               expected_output):
+        featuriser = MoleculeFeaturiser(feature_fns)
+        feature_info = featuriser.get_feature_names()
+        assert feature_info == expected_output
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for multiple features
+        ([mf.logp, mf.molwt, mf.rdkit('Kappa1'), mf.rdkit('Kappa2')],
+            [
+                'logp',
+                'molwt',
+                'rdkit(Kappa1)',
+                'rdkit(Kappa2)']),
+        ([mf.fingerprint_atompair()],
+            [f'fingerprint_atompair(fpSize=2048,count=False)[{i}]'
+                for i in range(2048)]),
+        ([mf.fingerprint_morgan(2)],
+            [f'fingerprint_morgan(radius=2,fpSize=2048,count=False)[{i}]'
+                for i in range(2048)]),
+    ])
+    def test_get_feature_keys(self,
+                              feature_fns,
+                              expected_output):
+        featuriser = MoleculeFeaturiser(feature_fns)
+        feature_names = featuriser.get_feature_keys()
+        assert feature_names == expected_output

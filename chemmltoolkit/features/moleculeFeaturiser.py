@@ -1,17 +1,17 @@
-from chemmltoolkit.utils.list_utils import flatten
+from typing import List
+from chemmltoolkit.features.featuriser import Featuriser
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
 
 
-class MoleculeFeaturiser:
+class MoleculeFeaturiser(Featuriser):
     """Generator for molecule-based features.
 
     Args:
         features: A list of features to generate.
     """
-    def __init__(self,
-                 features: list):
-        self.features = features
+    def __init__(self, features: list):
+        super(MoleculeFeaturiser, self).__init__(features)
 
     def process_molecule(self, mol: Mol):
         """Generates molecular features.
@@ -22,16 +22,13 @@ class MoleculeFeaturiser:
         Returns:
             A list of features.
         """
+        return self._process(mol)
 
-        features = [feature(mol) for feature in self.features]
-        return flatten(features)
-
-    def get_feature_length(self) -> int:
-        """Calculates the length of the generated feature vector
+    def get_feature_lengths(self) -> List[int]:
+        """Calculates the length of each feature
 
         Returns:
-            The length of the feature vector.
+            A list of the lengths of each feature.
         """
-        molecule = MolFromSmiles('CC')
-        features = self.process_molecule(molecule)
-        return len(features)
+        mol = MolFromSmiles('CC')
+        return self._get_feature_lengths(mol)

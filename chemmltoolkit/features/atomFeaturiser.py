@@ -1,16 +1,17 @@
-from chemmltoolkit.utils.list_utils import flatten
+from typing import List
+from chemmltoolkit.features.featuriser import Featuriser
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
 from rdkit.Chem import Atom
 
 
-class AtomFeaturiser:
+class AtomFeaturiser(Featuriser):
     """Generator for atom-based features.
     Args:
         features: A list of features to generate.
     """
     def __init__(self, features: list):
-        self.features = features
+        super(AtomFeaturiser, self).__init__(features)
 
     def process_atom(self, atom: Atom):
         """Generates features for an individual atom.
@@ -21,9 +22,7 @@ class AtomFeaturiser:
         Returns:
             A list of features.
         """
-
-        features = [feature(atom) for feature in self.features]
-        return flatten(features)
+        return self._process(atom)
 
     def process_molecule(self, mol: Mol):
         """Generates features for all atoms in a molecule.
@@ -35,15 +34,14 @@ class AtomFeaturiser:
             A nested list of features for all atoms.
         """
         atoms = mol.GetAtoms()
-        return [self.process_atom(atom) for atom in atoms]
+        return [self._process(atom) for atom in atoms]
 
-    def get_feature_length(self) -> int:
-        """Calculates the length of the generated feature vector
+    def get_feature_lengths(self) -> List[int]:
+        """Calculates the length of each feature
 
         Returns:
-            The length of the feature vector.
+            A list of the lengths of each feature.
         """
         molecule = MolFromSmiles('CC')
         atom = molecule.GetAtoms()[0]
-        features = self.process_atom(atom)
-        return len(features)
+        return self._get_feature_lengths(atom)

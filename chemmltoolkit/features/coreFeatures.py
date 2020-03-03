@@ -1,4 +1,5 @@
 from chemmltoolkit.utils import list_utils
+from chemmltoolkit.features.utils import get_token_name
 
 
 def normalize(feature, mean=None, std=None):
@@ -26,6 +27,9 @@ def normalize(feature, mean=None, std=None):
 
     def _normalize(input):
         return (feature(input) - mean) / std
+
+    _normalize.__name__ = \
+        f'normalize({feature.__name__}, mean={mean}, std={std})'
     return _normalize
 
 
@@ -43,11 +47,22 @@ def one_hot(feature, tokens=None):
         tokens: A list of tokens to use for encoding.
 
     Returns:
-        The normalized feature.
+        The one-hot encoded feature.
     """
     if tokens is None:
         tokens = feature.tokens
 
+    feature_name = feature.__name__
+    token_names = [get_token_name(token) for token in tokens]
+
     def _one_hot(input):
         return list_utils.one_hot(feature(input), tokens)
+
+    def _get_feature_keys():
+        return [f'one_hot({feature_name})[{token_name}]'
+                for token_name in token_names]
+
+    token_name_list = ','.join(token_names)
+    _one_hot.__name__ = f'one_hot({feature_name}, tokens=[{token_name_list}])'
+    _one_hot.get_feature_keys = _get_feature_keys
     return _one_hot

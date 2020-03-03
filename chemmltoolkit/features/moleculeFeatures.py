@@ -96,9 +96,13 @@ def fingerprint_atompair(fpSize=2048, count=False):
     generator = rdFingerprintGenerator.GetAtomPairGenerator(fpSize=fpSize)
 
     if count:
-        return _fingerprint_fn_count(generator)
+        fingerprint_fn = _fingerprint_fn_count(generator)
     else:
-        return _fingerprint_fn_bits(generator)
+        fingerprint_fn = _fingerprint_fn_bits(generator)
+
+    fingerprint_fn.__name__ = f'fingerprint_atompair(' + \
+                              f'fpSize={fpSize},count={count})'
+    return fingerprint_fn
 
 
 def fingerprint_morgan(radius, fpSize=2048, count=False):
@@ -115,9 +119,13 @@ def fingerprint_morgan(radius, fpSize=2048, count=False):
                                                           fpSize=fpSize)
 
     if count:
-        return _fingerprint_fn_count(generator)
+        fingerprint_fn = _fingerprint_fn_count(generator)
     else:
-        return _fingerprint_fn_bits(generator)
+        fingerprint_fn = _fingerprint_fn_bits(generator)
+
+    fingerprint_fn.__name__ = f'fingerprint_morgan(radius={radius},' + \
+                              f'fpSize={fpSize},count={count})'
+    return fingerprint_fn
 
 
 def logp(mol: Mol) -> float:
@@ -175,7 +183,7 @@ def rdkit(name: str):
 
     def _rdkit(mol: Mol):
         return descriptor(mol)
-
+    _rdkit.__name__ = f'rdkit({name})'
     return _rdkit
 
 

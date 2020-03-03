@@ -44,7 +44,9 @@ def is_ringsize(ringSize: int) -> int:
     Args:
         ringSize: The size of the ring.
     """
-    def _is_ringsize(bond: Bond): return int(bond.IsInRingSize(ringSize))
+    def _is_ringsize(bond: Bond):
+        return int(bond.IsInRingSize(ringSize))
+    _is_ringsize.__name__ = f'is_ringsize({ringSize})'
     return _is_ringsize
 
 

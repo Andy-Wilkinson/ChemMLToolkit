@@ -72,5 +72,45 @@ class TestAtomFeaturiser(object):
         featuriser = AtomFeaturiser(feature_fns)
         mol = Chem.MolFromSmiles(smiles_input)
         features = featuriser.process_molecule(mol)
+        feature_lengths = featuriser.get_feature_lengths()
         assert features == expected_output
-        assert featuriser.get_feature_length() == len(expected_output[0])
+        assert len(feature_lengths) == len(feature_fns)
+        assert sum(feature_lengths) == len(expected_output[0])
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for individual features
+        ([af.atomic_number], ['atomic_number']),
+        ([af.is_aromatic], ['is_aromatic']),
+        ([af.is_ringsize(3)], ['is_ringsize(3)']),
+        ([feat.one_hot(af.hybridization)],
+            ['one_hot(hybridization, tokens=[SP,SP2,SP3,SP3D,SP3D2])']),
+        # Tests for multiple features
+        ([af.is_aromatic, af.degree], ['is_aromatic', 'degree']),
+    ])
+    def test_get_feature_names(self,
+                               feature_fns,
+                               expected_output):
+        featuriser = AtomFeaturiser(feature_fns)
+        feature_info = featuriser.get_feature_names()
+        assert feature_info == expected_output
+
+    @pytest.mark.parametrize("feature_fns,expected_output", [
+        # Tests for multiple features
+        ([af.is_aromatic, af.is_ringsize(3), feat.one_hot(af.hybridization),
+          af.degree],
+            [
+                'is_aromatic',
+                'is_ringsize(3)',
+                'one_hot(hybridization)[SP]',
+                'one_hot(hybridization)[SP2]',
+                'one_hot(hybridization)[SP3]',
+                'one_hot(hybridization)[SP3D]',
+                'one_hot(hybridization)[SP3D2]',
+                'degree']),
+    ])
+    def test_get_feature_keys(self,
+                              feature_fns,
+                              expected_output):
+        featuriser = AtomFeaturiser(feature_fns)
+        feature_names = featuriser.get_feature_keys()
+        assert feature_names == expected_output

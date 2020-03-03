@@ -1,18 +1,19 @@
-from chemmltoolkit.utils.list_utils import flatten
+from typing import List
+from chemmltoolkit.features.featuriser import Featuriser
 import numpy as np
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
 from rdkit.Chem import Bond
 
 
-class BondFeaturiser:
+class BondFeaturiser(Featuriser):
     """Generator for bond-based features.
 
     Args:
         features: A list of features to generate.
     """
-    def __init__(self, features):
-        self.features = features
+    def __init__(self, features: list):
+        super(BondFeaturiser, self).__init__(features)
 
     def process_bond(self, bond: Bond):
         """Generates features for an individual bond.
@@ -23,9 +24,7 @@ class BondFeaturiser:
         Returns:
             A list of features.
         """
-
-        features = [feature(bond) for feature in self.features]
-        return flatten(features)
+        return self._process(bond)
 
     def process_molecule(self, mol: Mol):
         """Generates features for all bond in a molecule.
@@ -41,7 +40,7 @@ class BondFeaturiser:
         return [(
             bond.GetBeginAtomIdx(),
             bond.GetEndAtomIdx(),
-            self.process_bond(bond)) for bond in bonds]
+            self._process(bond)) for bond in bonds]
 
     def generate_adjacency_matricies(self, mol: Mol):
         """Generates adjacency matricies for a molecule.
@@ -64,13 +63,12 @@ class BondFeaturiser:
 
         return adj
 
-    def get_feature_length(self) -> int:
-        """Calculates the length of the generated feature vector
+    def get_feature_lengths(self) -> List[int]:
+        """Calculates the length of each feature
 
         Returns:
-            The length of the feature vector.
+            A list of the lengths of each feature.
         """
         molecule = MolFromSmiles('CC')
         bond = molecule.GetBonds()[0]
-        features = self.process_bond(bond)
-        return len(features)
+        return self._get_feature_lengths(bond)
