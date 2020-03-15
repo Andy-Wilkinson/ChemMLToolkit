@@ -3,7 +3,7 @@ import numpy as np
 import chemmltoolkit.data.quantities as quant
 
 
-class TestQuantitiesString(object):
+class TestStringConv(object):
     @pytest.mark.parametrize("input_str,value,operator,unit_prefix,units", [
         ('10 M', 10.0, None, '', 'M'),
         ('10 mM', 10.0e-3, None, 'm', 'M'),

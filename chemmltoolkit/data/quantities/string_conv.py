@@ -7,7 +7,7 @@ _regex_quantity = None
 _regex_range = None
 
 
-def from_string(input: str):
+def from_string(input: str) -> Quantity:
     if not _regex_quantity:
         _compile_regex()
 
@@ -38,7 +38,7 @@ def from_string(input: str):
         return Quantity((min_value, max_value), '-', unit_prefix, units)
 
 
-def to_string(q: Quantity):
+def to_string(q: Quantity) -> str:
     exponent = qconst.unit_prefix_dict[q.unit_prefix]
     if not q.operator:
         value = round(q.value / exponent, qconst.rounding_digits)
