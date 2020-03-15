@@ -13,7 +13,6 @@ def add(a: Quantity, b: Quantity) -> Quantity:
 
     if a.operator != '-' and b.operator != '-':
         value = a.value + b.value
-        unit_prefix = a.unit_prefix if a.value > b.value else b.unit_prefix
         if a.operator is None and b.operator is None:
             operator = None
         elif _compare_operators(['>'], [None, '>', '>=']):
@@ -28,7 +27,6 @@ def add(a: Quantity, b: Quantity) -> Quantity:
             operator = '~'
 
     else:
-        unit_prefix = a.unit_prefix
         if a.operator != '-':
             a, b = b, a
         if b.operator is None:
@@ -45,7 +43,7 @@ def add(a: Quantity, b: Quantity) -> Quantity:
             operator = b.operator
 
     units = a.units
-    return Quantity(value, operator, unit_prefix, units)
+    return Quantity(value, operator, units)
 
     #         if a.operator is None and b.operator is None:
     #             operator = None
@@ -61,7 +59,6 @@ def add(a: Quantity, b: Quantity) -> Quantity:
 
 def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
     if a.operator != b.operator \
-            or a.unit_prefix != b.unit_prefix \
             or a.units != b.units:
         return False
 

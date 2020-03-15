@@ -1,8 +1,7 @@
 class Quantity:
-    def __init__(self, value, operator, unit_prefix, units):
+    def __init__(self, value, operator, units):
         self.value = value
         self.operator = operator
-        self.unit_prefix = unit_prefix
         self.units = units
 
     def __str__(self):
@@ -23,5 +22,4 @@ class Quantity:
 
         return self.value == other.value \
             and self.operator == other.operator \
-            and self.unit_prefix == other.unit_prefix \
             and self.units == other.units

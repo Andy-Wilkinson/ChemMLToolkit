@@ -22,7 +22,7 @@ def from_string(input: str) -> Quantity:
         exponent = qconst.unit_prefix_dict[unit_prefix]
         value = float(value) * exponent
 
-        return Quantity(value, operator, unit_prefix, units)
+        return Quantity(value, operator, units)
 
     match = _regex_range.match(input)
     if match:
@@ -35,22 +35,28 @@ def from_string(input: str) -> Quantity:
         min_value = float(min_value) * exponent
         max_value = float(max_value) * exponent
 
-        return Quantity((min_value, max_value), '-', unit_prefix, units)
+        return Quantity((min_value, max_value), '-', units)
 
 
 def to_string(q: Quantity) -> str:
-    exponent = qconst.unit_prefix_dict[q.unit_prefix]
+    lookup_val = abs(q.value) if q.operator != '-' else \
+                 max(abs(q.value[0]), abs(q.value[1]))
+    for unit_prefix, exponent in qconst.unit_prefix_dict.items():
+        if lookup_val > exponent:
+            break
+    exponent = qconst.unit_prefix_dict[unit_prefix]
+
     if not q.operator:
         value = round(q.value / exponent, qconst.rounding_digits)
-        return f'{value} {q.unit_prefix}{q.units}'
+        return f'{value} {unit_prefix}{q.units}'
     elif q.operator in qconst.operators_range:
         min_value, max_value = q.value
         min_value = round(min_value / exponent, qconst.rounding_digits)
         max_value = round(max_value / exponent, qconst.rounding_digits)
-        return f'{min_value}{q.operator}{max_value} {q.unit_prefix}{q.units}'
+        return f'{min_value}{q.operator}{max_value} {unit_prefix}{q.units}'
     else:
         value = round(q.value / exponent, qconst.rounding_digits)
-        return f'{q.operator}{value} {q.unit_prefix}{q.units}'
+        return f'{q.operator}{value} {unit_prefix}{q.units}'
 
 
 def _compile_regex():
