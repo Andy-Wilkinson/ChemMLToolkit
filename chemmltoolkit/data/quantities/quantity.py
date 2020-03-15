@@ -23,3 +23,14 @@ class Quantity:
         return self.value == other.value \
             and self.operator == other.operator \
             and self.units == other.units
+
+    def __neg__(self):
+        from chemmltoolkit.data.quantities.maths import neg
+        return neg(self)
+
+    def __pos__(self):
+        return Quantity(self.value, self.operator, self.units)
+
+    def __sub__(self, other):
+        from chemmltoolkit.data.quantities.maths import sub
+        return sub(self, other)

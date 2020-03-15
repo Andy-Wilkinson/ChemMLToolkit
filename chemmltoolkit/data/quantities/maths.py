@@ -1,4 +1,5 @@
 from chemmltoolkit.data.quantities import Quantity
+from chemmltoolkit.data.quantities import IncompatibleUnitsError
 import math
 
 
@@ -8,8 +9,7 @@ def add(a: Quantity, b: Quantity) -> Quantity:
             or (b.operator in set_a and a.operator in set_b)
 
     if a.units != b.units:
-        # TODO: Throw with different units!
-        pass
+        raise IncompatibleUnitsError([a.units, b.units])
 
     if a.operator != '-' and b.operator != '-':
         value = a.value + b.value
@@ -45,17 +45,6 @@ def add(a: Quantity, b: Quantity) -> Quantity:
     units = a.units
     return Quantity(value, operator, units)
 
-    #         if a.operator is None and b.operator is None:
-    #             operator = None
-    #         elif (a.operator in ['>'] and b.operator in [None, '>', '>=']) \
-    #             or (b.operator in ['>'] and a.operator in [None, '>', '>=']):
-    #             operator = '>'
-    #         elif (a.operator in ['>='] and b.operator in [None, '>=']) \
-    #             or (b.operator in ['>='] and a.operator in [None, '>=']):
-    #             operator = '>='
-    #         else:
-    #             raise ValueError
-
 
 def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
     if a.operator != b.operator \
@@ -70,3 +59,22 @@ def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
     else:
         return math.isclose(a.value, b.value,
                             rel_tol=rel_tol, abs_tol=abs_tol)
+
+
+def neg(a: Quantity) -> Quantity:
+    if a.operator in [None, '~']:
+        return Quantity(-a.value, a.operator, a.units)
+    if a.operator == '-':
+        return Quantity((-a.value[1], -a.value[0]), '-', a.units)
+    elif a.operator == '>':
+        return Quantity(-a.value, '<', a.units)
+    elif a.operator == '<':
+        return Quantity(-a.value, '>', a.units)
+    elif a.operator == '>=':
+        return Quantity(-a.value, '<=', a.units)
+    elif a.operator == '<=':
+        return Quantity(-a.value, '>=', a.units)
+
+
+def sub(a: Quantity, b: Quantity) -> Quantity:
+    return a + (-b)
