@@ -10,6 +10,26 @@ MMFFGetForceField = rdForceFieldHelpers.MMFFGetMoleculeForceField
 
 
 class ConformerGenerator():
+    """Generates conformers for molecules.
+
+    Calling the 'generate_conformers' method will perform a number of steps.
+
+    * Generate a number of candidate conformers, pruning any within a
+      specified RMSD
+    * Minimise the conformers with the specified forcefield
+    * A further pruning step to remove conformers that have converged within
+      the specified RMSD
+
+    Args:
+        num_confs: The number of conformers to generate prior to minimisation.
+            If this is not specified, a suitable number of conformers will
+            be chosen per molecule based upon the flexibility.
+        prune_rms_thresh: The RMS below which to prune similar conformers.
+        force_field: The force field to use for minimisation. By default this
+            will use UFF. Setting this value to 'None' will skip the
+            minimisation step.
+    """
+
     def __init__(self,
                  num_confs=None,
                  prune_rms_thresh=0.35,
@@ -19,6 +39,14 @@ class ConformerGenerator():
         self.force_field = force_field
 
     def generate_conformers(self, mol):
+        """Generates conformers for the specified molecule.
+
+        Args:
+            smiles: The input molecule.
+
+        Returns:
+            A new molecule with embedded conformers.
+        """
         mol = Chem.AddHs(mol)
         mol = self._embed_conformers(mol)
         energies = [self._minimize_conformer(mol, c.GetId())
