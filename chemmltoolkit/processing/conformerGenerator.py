@@ -25,6 +25,11 @@ class ConformerGenerator():
             If this is not specified, a suitable number of conformers will
             be chosen per molecule based upon the flexibility.
         prune_rms_thresh: The RMS below which to prune similar conformers.
+            Note that for speed the RMSD is calculated only for heavy atoms.
+        embed_parameters: The RDKit EmbedParameters to use for generating
+            conformers. By default this will be ETKDGv2. Note that for ease
+            of use, the PruneRmsThresh property will always be set to the
+            value of 'prune_rms_thresh'.
         force_field: The force field to use for minimisation. By default this
             will use UFF. Setting this value to 'None' will skip the
             minimisation step.
@@ -33,10 +38,15 @@ class ConformerGenerator():
     def __init__(self,
                  num_confs=None,
                  prune_rms_thresh=0.35,
+                 embed_parameters=None,
                  force_field='uff'):
         self.num_confs = num_confs
         self.prune_rms_thresh = prune_rms_thresh
         self.force_field = force_field
+
+        self.embed_parameters = embed_parameters if embed_parameters \
+            else AllChem.ETKDGv2()
+        self.embed_parameters.PruneRmsThresh = prune_rms_thresh
 
     def generate_conformers(self, mol):
         """Generates conformers for the specified molecule.
@@ -68,8 +78,7 @@ class ConformerGenerator():
 
         AllChem.EmbedMultipleConfs(mol,
                                    numConfs=num_confs,
-                                   maxAttempts=1000,
-                                   pruneRmsThresh=self.prune_rms_thresh)
+                                   params=self.embed_parameters)
 
         return mol
 
