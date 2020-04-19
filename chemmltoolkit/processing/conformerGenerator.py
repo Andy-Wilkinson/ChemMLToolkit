@@ -55,8 +55,11 @@ class ConformerGenerator():
         """
         mol = Chem.AddHs(mol)
         mol = self._embed_conformers(mol)
-        energies = self._minimize_conformers(mol, self.force_field)
-        mol = self._prune_conformers(mol, energies)
+
+        if self.force_field:
+            energies = self._minimize_conformers(mol, self.force_field)
+            mol = self._prune_conformers(mol, energies)
+
         return mol
 
     def _embed_conformers(self, mol):
