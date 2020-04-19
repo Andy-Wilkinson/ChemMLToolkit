@@ -93,18 +93,16 @@ class ConformerGenerator():
         return [energy for success, energy in result if success == 0]
 
     def _prune_conformers(self, mol, energies):
-        mol_noH = Chem.RemoveHs(mol)
         # Only keep the lowest energy conformers within each RMSD
         # Uses the procedure of Chem. Inf. Model., 2012, 52, 1146
         conformers = mol.GetConformers()
         confIds_sorted = [conformers[i].GetId() for i in np.argsort(energies)]
         confIds_keep = []
+        mol_noH = Chem.RemoveHs(mol)
 
         for confId in confIds_sorted:
             keep_conformer = True
             for refId in confIds_keep:
-                # rmsd = AllChem.GetBestRMS(mol, mol,
-                #                           prbId=confId, refId=refId)
                 rmsd = AllChem.GetBestRMS(mol_noH, mol_noH,
                                           prbId=confId, refId=refId)
                 if rmsd < self.prune_rms_thresh:
