@@ -2,11 +2,6 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem import rdMolDescriptors
-from rdkit.Chem import rdForceFieldHelpers
-
-
-MMFFGetProps = rdForceFieldHelpers.MMFFGetMoleculeProperties
-MMFFGetForceField = rdForceFieldHelpers.MMFFGetMoleculeForceField
 
 
 class ConformerGenerator():
@@ -32,7 +27,8 @@ class ConformerGenerator():
             value of 'prune_rms_thresh'.
         force_field: The force field to use for minimisation. By default this
             will use UFF. Setting this value to 'None' will skip the
-            minimisation step.
+            minimisation step. Supported force fields are: 'uff', 'mmff94' or
+            'mmff94s'.
     """
 
     def __init__(self,
@@ -59,8 +55,7 @@ class ConformerGenerator():
         """
         mol = Chem.AddHs(mol)
         mol = self._embed_conformers(mol)
-        energies = [self._minimize_conformer(mol, c.GetId())
-                    for c in mol.GetConformers()]
+        energies = self._minimize_conformers(mol, self.force_field)
         mol = self._prune_conformers(mol, energies)
         return mol
 
@@ -82,20 +77,20 @@ class ConformerGenerator():
 
         return mol
 
-    def _minimize_conformer(self, mol, confId):
-        if self.force_field == 'uff':
-            force_field = AllChem.UFFGetMoleculeForceField(mol, confId=confId)
-        elif self.force_field.startswith('mmff'):
-            AllChem.MMFFSanitizeMolecule(mol)
-            mmff_props = MMFFGetProps(mol, mmffVariant=self.force_field)
-            force_field = MMFFGetForceField(mol, mmff_props, confId=confId)
+    def _minimize_conformers(self, mol, force_field):
+        if force_field == 'uff':
+            result = AllChem.UFFOptimizeMoleculeConfs(mol)
+        elif force_field.startswith('mmff'):
+            result = AllChem.MMFFOptimizeMoleculeConfs(mol,
+                                                       mmffVariant=force_field)
         else:
-            raise ValueError(f'Unexpected force field {self.force_field}')
+            raise ValueError(f'Unexpected force field {force_field}')
 
-        force_field.Minimize()
-        energy = force_field.CalcEnergy()
+        for conformer, (success, _) in zip(mol.GetConformers(), result):
+            if success != 0:
+                mol.RemoveConformer(conformer.GetId())
 
-        return energy
+        return [energy for success, energy in result if success == 0]
 
     def _prune_conformers(self, mol, energies):
         mol_noH = Chem.RemoveHs(mol)
