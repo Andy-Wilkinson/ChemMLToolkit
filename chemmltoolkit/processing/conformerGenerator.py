@@ -14,6 +14,7 @@ class ConformerGenerator():
     * Minimise the conformers with the specified forcefield
     * A further pruning step to remove conformers that have converged within
       the specified RMSD
+    * Align the conformers to template molecules (if specified)
 
     Args:
         num_confs: The number of conformers to generate prior to minimisation.
@@ -29,16 +30,27 @@ class ConformerGenerator():
             will use UFF. Setting this value to 'None' will skip the
             minimisation step. Supported force fields are: 'uff', 'mmff94' or
             'mmff94s'.
+        align_templates: A list of template molecules to align the generated
+            conformers to. All matching template alignments are returned,
+            however they are first pruned for similarity by
+            'prune_rms_threshold' If this argument is not specified, no
+            alignment is performed.
+        align_rms_thresh: The RMS below which to accept alignments to
+            template molecules.
     """
 
     def __init__(self,
                  num_confs=None,
                  prune_rms_thresh=0.35,
                  embed_parameters=None,
-                 force_field='uff'):
+                 force_field='uff',
+                 align_templates=None,
+                 align_rms_thresh=1.0):
         self.num_confs = num_confs
         self.prune_rms_thresh = prune_rms_thresh
         self.force_field = force_field
+        self.align_templates = align_templates
+        self.align_rms_thresh = align_rms_thresh
 
         self.embed_parameters = embed_parameters if embed_parameters \
             else AllChem.ETKDGv2()
@@ -59,6 +71,9 @@ class ConformerGenerator():
         if self.force_field:
             energies = self._minimize_conformers(mol, self.force_field)
             mol = self._prune_conformers(mol, energies)
+
+        if self.align_templates:
+            mol = self._align_conformers(mol, self.align_templates)
 
         return mol
 
@@ -121,5 +136,46 @@ class ConformerGenerator():
 
         for confId in confIds_keep:
             result.AddConformer(mol.GetConformer(confId), assignId=True)
+
+        return result
+
+    def _align_conformers(self, mol, templates):
+        def _get_maps(mol, template):
+            matches = mol.GetSubstructMatches(template)
+            match_template = template.GetSubstructMatch(template)
+            return [(template, list(zip(m, match_template))) for m in matches]
+
+        template_maps = [_get_maps(mol, template) for template in templates]
+        template_maps = [i for l in template_maps for i in l]
+        template_maps = sorted(template_maps,
+                               key=lambda x: len(x[1]),
+                               reverse=True)
+
+        result = Chem.Mol(mol)
+        result.RemoveAllConformers()
+
+        for conformer in mol.GetConformers():
+            candidate_conformers = []
+            for template, constraint_map in template_maps:
+                score = AllChem.AlignMol(mol,
+                                         template,
+                                         prbCid=conformer.GetId(),
+                                         atomMap=constraint_map)
+
+                if score <= self.align_rms_thresh:
+                    newConfId = result.AddConformer(conformer, assignId=True)
+                    candidate_conformers.append(newConfId)
+
+            accepted_conformers = candidate_conformers[:1]
+            for candidate_confId in candidate_conformers[1:]:
+                rmsds = [AllChem.GetConformerRMS(result,
+                                                 candidate_confId,
+                                                 accepted_confId,
+                                                 prealigned=True)
+                         for accepted_confId in accepted_conformers]
+                if min(rmsds) > self.prune_rms_thresh:
+                    accepted_conformers.append(candidate_confId)
+                else:
+                    result.RemoveConformer(candidate_confId)
 
         return result
