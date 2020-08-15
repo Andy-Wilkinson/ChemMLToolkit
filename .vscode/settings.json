@@ -2,7 +2,7 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "/home/andrew/miniconda3/envs/chemmltoolkit/bin/python",
+    "python.pythonPath": "C:\\Users\\Andrew.Wilkinson\\AppData\\Local\\Continuum\\miniconda3\\envs\\chemmltoolkit\\python.exe",
     "editor.rulers": [
         79
     ],

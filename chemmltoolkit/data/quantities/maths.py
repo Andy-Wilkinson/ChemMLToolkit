@@ -1,5 +1,4 @@
 from chemmltoolkit.data.quantities import Quantity
-from chemmltoolkit.data.quantities import IncompatibleUnitsError
 import math
 
 
@@ -7,9 +6,6 @@ def add(a: Quantity, b: Quantity) -> Quantity:
     def _compare_operators(set_a, set_b):
         return (a.operator in set_a and b.operator in set_b) \
             or (b.operator in set_a and a.operator in set_b)
-
-    if a.units != b.units:
-        raise IncompatibleUnitsError([a.units, b.units])
 
     if a.operator != '-' and b.operator != '-':
         value = a.value + b.value
@@ -42,20 +38,18 @@ def add(a: Quantity, b: Quantity) -> Quantity:
             value = a.value[1] + b.value
             operator = b.operator
 
-    units = a.units
-    return Quantity(value, operator, units)
+    return Quantity(value, operator)
 
 
 def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
-    if a.operator != b.operator \
-            or a.units != b.units:
+    if a.operator != b.operator:
         return False
 
     if a.operator == '-':
         return math.isclose(a.value[0], b.value[0],
                             rel_tol=rel_tol, abs_tol=abs_tol) and \
-               math.isclose(a.value[1], b.value[1],
-                            rel_tol=rel_tol, abs_tol=abs_tol)
+            math.isclose(a.value[1], b.value[1],
+                         rel_tol=rel_tol, abs_tol=abs_tol)
     else:
         return math.isclose(a.value, b.value,
                             rel_tol=rel_tol, abs_tol=abs_tol)
@@ -63,17 +57,17 @@ def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
 
 def neg(a: Quantity) -> Quantity:
     if a.operator in [None, '~']:
-        return Quantity(-a.value, a.operator, a.units)
+        return Quantity(-a.value, a.operator)
     if a.operator == '-':
-        return Quantity((-a.value[1], -a.value[0]), '-', a.units)
+        return Quantity((-a.value[1], -a.value[0]), '-')
     elif a.operator == '>':
-        return Quantity(-a.value, '<', a.units)
+        return Quantity(-a.value, '<')
     elif a.operator == '<':
-        return Quantity(-a.value, '>', a.units)
+        return Quantity(-a.value, '>')
     elif a.operator == '>=':
-        return Quantity(-a.value, '<=', a.units)
+        return Quantity(-a.value, '<=')
     elif a.operator == '<=':
-        return Quantity(-a.value, '>=', a.units)
+        return Quantity(-a.value, '>=')
 
 
 def sub(a: Quantity, b: Quantity) -> Quantity:
