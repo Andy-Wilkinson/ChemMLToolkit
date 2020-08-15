@@ -100,7 +100,7 @@ def fingerprint_atompair(fpSize=2048, count=False):
     else:
         fingerprint_fn = _fingerprint_fn_bits(generator)
 
-    fingerprint_fn.__name__ = f'fingerprint_atompair(' + \
+    fingerprint_fn.__name__ = 'fingerprint_atompair(' + \
                               f'fpSize={fpSize},count={count})'
     return fingerprint_fn
 

@@ -146,7 +146,7 @@ class ConformerGenerator():
             return [(template, list(zip(m, match_template))) for m in matches]
 
         template_maps = [_get_maps(mol, template) for template in templates]
-        template_maps = [i for l in template_maps for i in l]
+        template_maps = [item for list in template_maps for item in list]
         template_maps = sorted(template_maps,
                                key=lambda x: len(x[1]),
                                reverse=True)

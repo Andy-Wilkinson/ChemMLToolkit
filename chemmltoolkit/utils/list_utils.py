@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from collections import MutableMapping
 
 
-def flatten(l: list) -> list:
+def flatten(l: list) -> list:  # noqa: E741
     """Flattens a nested list into a flat list of elements.
 
     Args:
@@ -11,7 +11,7 @@ def flatten(l: list) -> list:
     Returns:
         The flattened list.
     """
-    def _flatten(l):
+    def _flatten(l):  # noqa: E741
         for el in l:
             if _is_iterable(el):
                 yield from flatten(el)
@@ -81,7 +81,7 @@ def one_hot(feature, tokens: list) -> list:
     return [int(feature == token) for token in tokens]
 
 
-def pad_list(l: list, length: int, item) -> list:
+def pad_list(l: list, length: int, item) -> list:  # noqa: E741
     """Pads a list to the specified length.
 
     Note that if the input list is longer than the specified length it is not
