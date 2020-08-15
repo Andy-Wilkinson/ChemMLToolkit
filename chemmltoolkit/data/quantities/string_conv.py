@@ -1,6 +1,7 @@
 import re
 from chemmltoolkit.data.quantities import Quantity
-import chemmltoolkit.data.quantities._constants as qconst
+from chemmltoolkit.data.quantities._constants \
+    import unit_prefix_dict, operators_range, units
 
 
 _regex_quantity = None
@@ -19,7 +20,7 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
         units = match.group('units')
 
         operator = None if operator in ['', '='] else operator
-        exponent = qconst.unit_prefix_dict[unit_prefix] if unit_prefix else 1.0
+        exponent = unit_prefix_dict[unit_prefix] if unit_prefix else 1.0
         value = float(value) * exponent
 
         quantity = Quantity(value, operator)
@@ -32,7 +33,7 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
         unit_prefix = match.group('unit_prefix')
         units = match.group('units')
 
-        exponent = qconst.unit_prefix_dict[unit_prefix] if unit_prefix else 1.0
+        exponent = unit_prefix_dict[unit_prefix] if unit_prefix else 1.0
         min_value = float(min_value) * exponent
         max_value = float(max_value) * exponent
 
@@ -41,16 +42,9 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
 
 
 def to_string(q: Quantity) -> str:
-    # lookup_val = abs(q.value) if q.operator != '-' else \
-    #     max(abs(q.value[0]), abs(q.value[1]))
-    # for unit_prefix, exponent in qconst.unit_prefix_dict.items():
-    #     if lookup_val > exponent:
-    #         break
-    # exponent = qconst.unit_prefix_dict[unit_prefix]
-
     if not q.operator:
         return f'{q.value}'
-    elif q.operator in qconst.operators_range:
+    elif q.operator in operators_range:
         min_value, max_value = q.value
         return f'{min_value}{q.operator}{max_value}'
     else:
@@ -60,8 +54,8 @@ def to_string(q: Quantity) -> str:
 def _compile_regex():
     global _regex_quantity, _regex_range
 
-    unit_prefix_regex = '|'.join(qconst.unit_prefix_dict.keys())
-    units_regex = '|'.join(qconst.units)
+    unit_prefix_regex = '|'.join(unit_prefix_dict.keys())
+    units_regex = '|'.join(units)
     units_full_regex = r'((?P<unit_prefix>' + unit_prefix_regex + ')' + \
                        r'(?P<units>' + units_regex + '))?'
 
