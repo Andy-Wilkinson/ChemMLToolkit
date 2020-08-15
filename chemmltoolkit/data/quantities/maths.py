@@ -55,6 +55,18 @@ def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
                             rel_tol=rel_tol, abs_tol=abs_tol)
 
 
+def log10(x: Quantity) -> Quantity:
+    return map_value(x, math.log10)
+
+
+def map_value(x: Quantity, fn) -> Quantity:
+    if x.operator == '-':
+        min_value, max_value = x.value
+        return Quantity((fn(min_value), fn(max_value)), x.operator)
+    else:
+        return Quantity(fn(x.value), x.operator)
+
+
 def neg(a: Quantity) -> Quantity:
     if a.operator in [None, '~']:
         return Quantity(-a.value, a.operator)
@@ -68,6 +80,10 @@ def neg(a: Quantity) -> Quantity:
         return Quantity(-a.value, '<=')
     elif a.operator == '<=':
         return Quantity(-a.value, '>=')
+
+
+def pow(x: float, y: Quantity) -> Quantity:
+    return map_value(y, lambda y: math.pow(x, y))
 
 
 def sub(a: Quantity, b: Quantity) -> Quantity:

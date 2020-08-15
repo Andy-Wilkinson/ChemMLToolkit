@@ -73,6 +73,22 @@ class TestMaths(object):
 
         assert (a == b) == expected_result
 
+    @pytest.mark.parametrize("a,result", [
+        ('100', '2'),
+        ('0.01', '-2'),
+        ('>100', '>2'),
+        ('<100', '<2'),
+        ('>=100', '>=2'),
+        ('<=100', '<=2'),
+        ('~100', '~2'),
+        ('100-1000', '2-3'),
+    ])
+    def test_log10(self, a, result):
+        a = quant.from_string(a)
+        result = quant.from_string(result)
+
+        assert quant.isclose(quant.log10(a), result)
+
     @pytest.mark.parametrize("a,b", [
         ('10', '-10'),
         ('0.001', '-0.001'),
@@ -91,6 +107,24 @@ class TestMaths(object):
         assert quant.isclose(-a, b)
         assert quant.isclose(quant.neg(b), a)
         assert quant.isclose(-b, a)
+
+    @pytest.mark.parametrize("a,b,result", [
+        (2.0, '2', '4'),
+        (3.0, '2', '9'),
+        (10.0, '2', '100'),
+        (10.0, '-2', '0.01'),
+        (10.0, '>2', '>100'),
+        (10.0, '<2', '<100'),
+        (10.0, '>=2', '>=100'),
+        (10.0, '<=2', '<=100'),
+        (10.0, '~2', '~100'),
+        (10.0, '2-3', '100-1000'),
+    ])
+    def test_pow(self, a, b, result):
+        b = quant.from_string(b)
+        result = quant.from_string(result)
+
+        assert quant.isclose(quant.pow(a, b), result)
 
     @pytest.mark.parametrize("a,b", [
         ('10', '10'),
