@@ -66,6 +66,16 @@ class TestMoleculeFeaturiser(object):
         assert features[50] == 0.0
         assert features[100] == 0
 
+    def test_process_all_rdkit_exceptions(self):
+        ex_list = ['Ipc', 'PEOE_VSA5', 'MolWt']
+        featuriser = MoleculeFeaturiser(mf.all_rdkit(exception_list=ex_list))
+        mol = Chem.MolFromSmiles('OCCCCO')
+        features = featuriser.process_molecule(mol)
+        assert len(features) == 197
+        assert features[0] == 8.08625
+        assert features[50] == 0.0
+        assert features[100] == 0
+
     @pytest.mark.parametrize("feature_fns,expected_output", [
         # Tests for individual features
         ([mf.logp], ['logp']),

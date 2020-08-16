@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from collections import MutableMapping
+from collections.abc import MutableMapping
 
 
 def flatten(l: list) -> list:  # noqa: E741

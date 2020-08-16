@@ -25,7 +25,7 @@ def _fingerprint_fn_count(generator):
     return _fp
 
 
-def all_rdkit():
+def all_rdkit(exception_list=[]):
     """Gets a list of all RDKit descriptors.
 
     This will return a set of features for all descriptors in the
@@ -81,7 +81,8 @@ def all_rdkit():
         'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan',
         'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea']
 
-    return [rdkit(descriptor) for descriptor in descriptors_2019_09_3]
+    return [rdkit(descriptor) for descriptor in descriptors_2019_09_3
+            if descriptor not in exception_list]
 
 
 def fingerprint_atompair(fpSize=2048, count=False):
