@@ -50,7 +50,8 @@ def generate_random_node_features(random,
 
     Args:
         random: The NumPy random number generator to use.
-        num_batches: The number of batches to generate.
+        num_batches: The number of batches to generate (use 'None' for no batch
+            dimension).
         num_nodes: The number of nodes to generate.
         num_node_features: The number of features per node.
 
@@ -58,7 +59,12 @@ def generate_random_node_features(random,
         A NumPy array of shape (num_batches, num_nodes, num_node_features)
         with random values between -1 and 1.
     """
-    return random.rand(num_batches, num_nodes, num_node_features) * 2.0 - 1.0
+    if num_batches:
+        features = random.rand(num_batches, num_nodes, num_node_features)
+    else:
+        features = random.rand(num_nodes, num_node_features)
+
+    return features * 2.0 - 1.0
 
 
 def generate_random_adjacency(random,
@@ -71,7 +77,8 @@ def generate_random_adjacency(random,
 
     Args:
         random: The NumPy random number generator to use.
-        num_batches: The number of batches to generate.
+        num_batches: The number of batches to generate (use 'None' for no batch
+            dimension).
         num_nodes: The number of nodes to generate.
         num_edge_features: The number of features per edge.
 
@@ -79,7 +86,11 @@ def generate_random_adjacency(random,
         A NumPy array of shape (num_batches, num_edge_features, num_nodes,
         num_nodes) with random values of either 0 or 1.
     """
-    shape = (num_batches, num_edge_features, num_nodes, num_nodes)
+    if num_batches:
+        shape = (num_batches, num_edge_features, num_nodes, num_nodes)
+    else:
+        shape = (1, num_edge_features, num_nodes, num_nodes)
+
     adjacency = random.randint(0, 2, shape)
 
     if symmetrise:
@@ -90,4 +101,7 @@ def generate_random_adjacency(random,
                          num_edge_features, axis=0)
         adjacency = adjacency * mask
 
-    return adjacency
+    if num_batches:
+        return adjacency
+    else:
+        return np.squeeze(adjacency, axis=0)
