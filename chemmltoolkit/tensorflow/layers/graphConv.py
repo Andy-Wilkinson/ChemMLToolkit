@@ -269,7 +269,8 @@ class GraphConv(Layer):
         # method (if any) to the kernel matrix
         if self.graph_regularization == 'basis':
             weights = tf.reshape(self.kernel, (self.num_bases,
-                                               self.num_node_features * self.units))
+                                               self.num_node_features *
+                                               self.units))
             weights = tf.matmul(self.kernel_coef, weights)
             weights = tf.reshape(weights, (self.num_weights,
                                            self.num_node_features, self.units))
