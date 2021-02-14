@@ -1,9 +1,10 @@
 import numpy as np
 import tensorflow as tf
 from chemmltoolkit.tensorflow.layers import GraphConv
+from chemmltoolkit.tensorflow.layers.preprocessing import NormaliseGraph
 from chemmltoolkit.tensorflow.graph import TensorGraph
 from chemmltoolkit.tensorflow.graph.tensorGraph import NODE_FEATURES
-from chemmltoolkit.tensorflow.processing import adjacency_ops
+from chemmltoolkit.tensorflow.graph.tensorGraph import EDGE_FEATURES
 from tests.test_utils.math_utils import Σ, Σneighbours
 from tests.test_utils.math_utils import generate_random_node_features
 from tests.test_utils.math_utils import generate_random_adjacency
@@ -55,12 +56,11 @@ class TestGraphConv(tf.test.TestCase):
         tensor_features = tf.convert_to_tensor(in_features, dtype=tf.float32)
         tensor_adjacency = tf.convert_to_tensor(in_adjacency, dtype=tf.float32)
 
-        tensor_adjacency = adjacency_ops.normalise(tensor_adjacency)
+        graph = TensorGraph(tensor_features, tensor_adjacency)
+        graph = NormaliseGraph()(graph)
 
         if sparse_adjacency:
-            tensor_adjacency = tf.sparse.from_dense(tensor_adjacency)
-
-        graph = TensorGraph(tensor_features, tensor_adjacency)
+            graph[EDGE_FEATURES] = tf.sparse.from_dense(graph[EDGE_FEATURES])
 
         graphConv.build({k: t.shape for k, t in graph.items()})
         graph_out = graphConv(graph)
