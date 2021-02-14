@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 from chemmltoolkit.tensorflow.layers import GraphConv
+from chemmltoolkit.tensorflow.graph import TensorGraph
+from chemmltoolkit.tensorflow.graph.tensorGraph import NODE_FEATURES
 from chemmltoolkit.tensorflow.processing import adjacency_ops
 from tests.test_utils.math_utils import Σ, Σneighbours
 from tests.test_utils.math_utils import generate_random_node_features
@@ -58,8 +60,10 @@ class TestGraphConv(tf.test.TestCase):
         if sparse_adjacency:
             tensor_adjacency = tf.sparse.from_dense(tensor_adjacency)
 
-        graphConv.build([tensor_features.shape, tensor_adjacency.shape])
-        graphConv_out = graphConv([tensor_features, tensor_adjacency])
+        graph = TensorGraph(tensor_features, tensor_adjacency)
+
+        graphConv.build({k: t.shape for k, t in graph.items()})
+        graph_out = graphConv(graph)
 
         # Literature reference implementation
         # Equation 2 defines the RGCN layer
@@ -71,9 +75,10 @@ class TestGraphConv(tf.test.TestCase):
         else:
             W0 = np.zeros((num_units, num_node_features))
 
-        activation = lambda x: np.maximum(x, 0)  # noqa: E731
-        c = lambda adj, i, r: np.sum(adj[r][i])  # noqa: E731
-        h_lplus1 = lambda i, h_l, adj: (  # noqa: E731
+        def activation(x): return np.maximum(x, 0)  # noqa: E731
+        def c(adj, i, r): return np.sum(adj[r][i])  # noqa: E731
+
+        def h_lplus1(i, h_l, adj): return (  # noqa: E731
             activation(Σ((0, num_edge_features), lambda r:
                          Σneighbours(adj[r], i, lambda j:
                                      (1.0/c(adj, i, r))
@@ -81,12 +86,12 @@ class TestGraphConv(tf.test.TestCase):
                        + np.matmul(W0, h_l[i])))
 
         np_out = [[h_lplus1(atom_idx, in_features[batch], in_adjacency[batch])
-                  for atom_idx in range(num_nodes)]
+                   for atom_idx in range(num_nodes)]
                   for batch in range(num_batches)]
 
         # Check equivalence
 
-        self.assertAllClose(graphConv_out, np_out)
+        self.assertAllClose(graph_out[NODE_FEATURES], np_out)
 
     # The same graph structure is used for most of the following tests.
     # There are two examples per batch, each with three nodes.
@@ -117,7 +122,7 @@ class TestGraphConv(tf.test.TestCase):
 
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
-                        kernel_initializer=initializer_identitiy_3d)
+                        kernel_initializer=initializer_identity_3d)
 
     def test_call_adjacency_concat(self):
         input_features = [
@@ -146,7 +151,7 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='concat',
-                        kernel_initializer=initializer_identitiy_3d)
+                        kernel_initializer=initializer_identity_3d)
 
     def test_call_adjacency_sum(self):
         input_features = [
@@ -171,7 +176,7 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='sum',
-                        kernel_initializer=initializer_identitiy_3d)
+                        kernel_initializer=initializer_identity_3d)
 
     def test_call_adjacency_max(self):
         input_features = [
@@ -196,21 +201,23 @@ class TestGraphConv(tf.test.TestCase):
         self._test_call([input_features, input_adjacency], expected_output,
                         units=2, use_bias=False,
                         aggregation_method='max',
-                        kernel_initializer=initializer_identitiy_3d)
+                        kernel_initializer=initializer_identity_3d)
 
     def _test_call(self, input, expected_output, **kwargs):
         input = [tf.convert_to_tensor(np.array(i), dtype=tf.float32)
                  for i in input]
+        graph = TensorGraph(input[0], input[1])
         graphConv = GraphConv(**kwargs)
         computed_shape = graphConv.compute_output_shape(
-            [input[0].shape, input[1].shape])
-        output = graphConv(input)
+            {k: t.shape for k, t in graph.items()})
+        graph_out = graphConv(graph)
 
-        self.assertAllEqual(expected_output, output)
-        self.assertAllEqual(output.shape, computed_shape)
+        self.assertAllEqual(expected_output, graph_out[NODE_FEATURES])
+        self.assertAllEqual({k: t.shape for k, t in graph_out.items()},
+                            computed_shape)
 
 
-def initializer_identitiy_3d(shape, dtype=None):
+def initializer_identity_3d(shape, dtype=None):
     identity = tf.eye(shape[1], shape[2], dtype=dtype)
     identity = tf.reshape(identity, (1, shape[1], shape[2]))
     return tf.tile(identity, (shape[0], 1, 1))

@@ -9,6 +9,8 @@ from tensorflow.python.keras import constraints
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import InputSpec
 import tensorflow.keras.backend as K
+from chemmltoolkit.tensorflow.graph.tensorGraph import NODE_FEATURES
+from chemmltoolkit.tensorflow.graph.tensorGraph import EDGE_FEATURES
 from chemmltoolkit.tensorflow.utils import register_keras_custom_object
 
 
@@ -119,24 +121,29 @@ class GraphConv(Layer):
         self.kernel_coef_constraint = constraints.get(kernel_coef_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-        self.input_spec = [InputSpec(min_ndim=2), InputSpec(ndim=4)]
+        self.input_spec = {
+            NODE_FEATURES: InputSpec(min_ndim=2),
+            EDGE_FEATURES: InputSpec(ndim=4)
+        }
 
     def build(self, input_shape):
         # Validate inputs
-        if not isinstance(input_shape, list):
-            raise ValueError('The `GraphConv` layer expects a list of inputs.')
-        if len(input_shape) != 2:
-            raise ValueError('A `GraphConv` layer should be called with 2'
-                             'inputs. Got ' + str(len(input_shape)) +
-                             ' inputs.')
+        if not isinstance(input_shape, dict):
+            raise ValueError('The `GraphConv` layer expects a dict of inputs.')
+        if NODE_FEATURES not in input_shape:
+            raise ValueError('A `GraphConv` layer should be called with a '
+                             'dict containing key "' + NODE_FEATURES + '".')
+        if EDGE_FEATURES not in input_shape:
+            raise ValueError('A `GraphConv` layer should be called with a '
+                             'dict containing key "' + EDGE_FEATURES + '".')
 
         dtype = dtypes.as_dtype(self.dtype or K.floatx())
         if not (dtype.is_floating or dtype.is_complex):
             raise TypeError('Unable to build `GraphConv` layer with '
                             'non-floating point dtype %s' % (dtype,))
 
-        features_shape = tensor_shape.TensorShape(input_shape[0])
-        adjacency_shape = tensor_shape.TensorShape(input_shape[1])
+        features_shape = tensor_shape.TensorShape(input_shape[NODE_FEATURES])
+        adjacency_shape = tensor_shape.TensorShape(input_shape[EDGE_FEATURES])
         if tensor_shape.dimension_value(features_shape[-1]) is None:
             raise ValueError('The last dimension of the features matrix '
                              '(first input) to `GraphConv` should be defined.'
@@ -166,15 +173,15 @@ class GraphConv(Layer):
         self.num_edge_features = tensor_shape.dimension_value(
             adjacency_shape[1])
 
-        self.input_spec = [
-            InputSpec(min_ndim=2, axes={
+        self.input_spec = {
+            NODE_FEATURES: InputSpec(min_ndim=2, axes={
                 -1: self.num_node_features,
                 -2: self.num_nodes}),
-            InputSpec(ndim=4, axes={
+            EDGE_FEATURES: InputSpec(ndim=4, axes={
                 1: self.num_edge_features,
                 2: self.num_nodes,
                 3: self.num_nodes})
-        ]
+        }
 
         # Add weights
         num_self_loops = 1 if self.add_self_loops else 0
@@ -183,48 +190,49 @@ class GraphConv(Layer):
             self.num_weights
 
         self.kernel = self.add_weight(
-                       'kernel',
-                       shape=[num_kernels,
-                              self.num_node_features,
-                              self.units],
-                       initializer=self.kernel_initializer,
-                       regularizer=self.kernel_regularizer,
-                       constraint=self.kernel_constraint,
-                       dtype=self.dtype,
-                       trainable=True)
+            'kernel',
+            shape=[num_kernels,
+                   self.num_node_features,
+                   self.units],
+            initializer=self.kernel_initializer,
+            regularizer=self.kernel_regularizer,
+            constraint=self.kernel_constraint,
+            dtype=self.dtype,
+            trainable=True)
 
         if self.graph_regularization:
             self.kernel_coef = self.add_weight(
-                       'kernel_coef',
-                       shape=[self.num_weights,
-                              self.num_bases],
-                       initializer=self.kernel_coef_initializer,
-                       regularizer=self.kernel_coef_regularizer,
-                       constraint=self.kernel_coef_constraint,
-                       dtype=self.dtype,
-                       trainable=True)
+                'kernel_coef',
+                shape=[self.num_weights,
+                       self.num_bases],
+                initializer=self.kernel_coef_initializer,
+                regularizer=self.kernel_coef_regularizer,
+                constraint=self.kernel_coef_constraint,
+                dtype=self.dtype,
+                trainable=True)
 
         if self.use_bias:
             self.bias = self.add_weight(
-                        'bias',
-                        shape=[self.units, ],
-                        initializer=self.bias_initializer,
-                        regularizer=self.bias_regularizer,
-                        constraint=self.bias_constraint,
-                        dtype=self.dtype,
-                        trainable=True)
+                'bias',
+                shape=[self.units, ],
+                initializer=self.bias_initializer,
+                regularizer=self.bias_regularizer,
+                constraint=self.bias_constraint,
+                dtype=self.dtype,
+                trainable=True)
         else:
             self.bias = None
 
         self.built = True
 
     def call(self, inputs):
-        features = tf.convert_to_tensor(inputs[0])
-        is_sparse_adjacency = isinstance(inputs[1], tf.sparse.SparseTensor)
+        features = tf.convert_to_tensor(inputs[NODE_FEATURES])
+        is_sparse_adjacency = isinstance(inputs[EDGE_FEATURES],
+                                         tf.sparse.SparseTensor)
         if is_sparse_adjacency:
-            adjacency = tf.sparse.to_dense(inputs[1])
+            adjacency = tf.sparse.to_dense(inputs[EDGE_FEATURES])
         else:
-            adjacency = tf.convert_to_tensor(inputs[1])
+            adjacency = tf.convert_to_tensor(inputs[EDGE_FEATURES])
 
         weights = self._get_weight_matrix()
 
@@ -254,24 +262,24 @@ class GraphConv(Layer):
         if self.activation is not None:
             outputs = self.activation(outputs)  # pylint: disable=not-callable
 
-        return outputs
+        return {**inputs, NODE_FEATURES: outputs}
 
     def _get_weight_matrix(self):
         # Get the weight matrix by applying the specified regularization
         # method (if any) to the kernel matrix
         if self.graph_regularization == 'basis':
             weights = tf.reshape(self.kernel, (self.num_bases,
-                                 self.num_node_features * self.units))
+                                               self.num_node_features * self.units))
             weights = tf.matmul(self.kernel_coef, weights)
             weights = tf.reshape(weights, (self.num_weights,
-                                 self.num_node_features, self.units))
+                                           self.num_node_features, self.units))
             return weights
         else:
             return self.kernel
 
     def compute_output_shape(self, input_shape):
-        features_shape = tensor_shape.TensorShape(input_shape[0])
-        adjacency_shape = tensor_shape.TensorShape(input_shape[1])
+        features_shape = tensor_shape.TensorShape(input_shape[NODE_FEATURES])
+        adjacency_shape = tensor_shape.TensorShape(input_shape[EDGE_FEATURES])
         features_shape = features_shape.with_rank_at_least(2)
 
         if self.aggregation_method == 'concat':
@@ -279,7 +287,12 @@ class GraphConv(Layer):
         else:
             multiplier = 1
 
-        return features_shape[:-1].concatenate(self.units * multiplier)
+        out_shape = features_shape[:-1].concatenate(self.units * multiplier)
+
+        return {
+            NODE_FEATURES: out_shape,
+            EDGE_FEATURES: adjacency_shape
+        }
 
     def get_config(self):
         config = {
