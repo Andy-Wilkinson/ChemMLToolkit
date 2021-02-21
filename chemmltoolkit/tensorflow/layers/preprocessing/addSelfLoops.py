@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers.experimental.preprocessing \
     import PreprocessingLayer
-from chemmltoolkit.tensorflow.graph.tensorGraph import EDGE_FEATURES
+from chemmltoolkit.tensorflow.graph.tensorGraph import map_edge_features
 from chemmltoolkit.tensorflow.utils import register_keras_custom_object
 
 
@@ -22,12 +22,11 @@ class AddSelfLoops(PreprocessingLayer):
         super(AddSelfLoops, self).__init__(name=name, **kwargs)
 
     def call(self, inputs):
-        edge_features = inputs[EDGE_FEATURES]
+        def _call(edge_features):
+            eye = tf.eye(tf.shape(edge_features)[-1])
+            return edge_features + eye
 
-        eye = tf.eye(tf.shape(edge_features)[-1])
-        edge_features = edge_features + eye
-
-        return {**inputs, EDGE_FEATURES: edge_features}
+        return map_edge_features(inputs, _call)
 
     def compute_output_shape(self, input_shape):
         return input_shape

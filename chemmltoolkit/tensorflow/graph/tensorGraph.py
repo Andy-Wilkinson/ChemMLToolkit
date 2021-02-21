@@ -58,3 +58,15 @@ class TensorGraphShape:
             'node_features': 0.0,
             'edge_features': 0.0
         }
+
+
+def map_node_features(graph, map_fn):
+    features_in = graph[NODE_FEATURES]
+    features_out = map_fn(features_in)
+    return {**graph, NODE_FEATURES: features_out}
+
+
+def map_edge_features(graph, map_fn):
+    features_in = graph[EDGE_FEATURES]
+    features_out = map_fn(features_in)
+    return {**graph, EDGE_FEATURES: features_out}

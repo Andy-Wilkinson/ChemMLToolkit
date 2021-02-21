@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers.experimental.preprocessing \
     import PreprocessingLayer
-from chemmltoolkit.tensorflow.graph.tensorGraph import EDGE_FEATURES
+from chemmltoolkit.tensorflow.graph.tensorGraph import map_edge_features
 from chemmltoolkit.tensorflow.utils import register_keras_custom_object
 
 
@@ -24,14 +24,12 @@ class NormaliseGraph(PreprocessingLayer):
         self.method = method
 
     def call(self, inputs):
-        edge_features = inputs[EDGE_FEATURES]
-
         if self.method == 'spectral':
-            edge_features = self.normalise_spectral(edge_features)
+            map_fn = self.normalise_spectral
         else:
-            edge_features = self.normalise_normal(edge_features)
+            map_fn = self.normalise_normal
 
-        return {**inputs, EDGE_FEATURES: edge_features}
+        return map_edge_features(inputs, map_fn)
 
     def normalise_normal(self, edge_features):
         degree = tf.reduce_sum(edge_features, axis=-2)
