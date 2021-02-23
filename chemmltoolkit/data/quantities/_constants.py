@@ -3,8 +3,9 @@ unit_prefix_dict = {
     'm': 1.0e-3,
     'u': 1.0e-6,
     'n': 1.0e-9
-    }
+}
 
+operators_all = [None, '>', '<', '>=', '<=', '~', '-']
 operators_range = ['-']
 
 units = ['M', 'g']

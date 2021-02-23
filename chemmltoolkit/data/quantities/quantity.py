@@ -1,5 +1,20 @@
+from chemmltoolkit.data.quantities._constants \
+    import operators_all, operators_range
+
+
 class Quantity:
     def __init__(self, value, operator):
+        if operator not in operators_all:
+            raise ValueError(f'Invalid `operator` "{operator}".')
+        if operator in operators_range:
+            if (type(value) is not tuple) or (len(value) != 2) \
+                    or (type(value[0]) is not float) \
+                    or (type(value[1]) is not float):
+                raise ValueError('The `value` must be a tuple of two floats.')
+        else:
+            if type(value) is not float:
+                raise ValueError('The `value` must be a float.')
+
         self.value = value
         self.operator = operator
 
