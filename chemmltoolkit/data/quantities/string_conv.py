@@ -23,7 +23,7 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
         exponent = unit_prefix_dict[unit_prefix] if unit_prefix else 1.0
         value = float(value) * exponent
 
-        quantity = Quantity(value, operator)
+        quantity = Quantity.from_value(value, operator)
         return (quantity, units) if return_units else quantity
 
     match = _regex_range.match(input)
@@ -37,7 +37,7 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
         min_value = float(min_value) * exponent
         max_value = float(max_value) * exponent
 
-        quantity = Quantity((min_value, max_value), '-')
+        quantity = Quantity(min_value, max_value, False, False, 0.0)
         return (quantity, units) if return_units else quantity
 
 

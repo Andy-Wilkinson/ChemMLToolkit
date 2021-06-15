@@ -76,7 +76,7 @@ class TestStringConv(object):
                        ouput_str,
                        value,
                        operator):
-        quantity = quant.Quantity(value, operator)
+        quantity = quant.Quantity.from_value(value, operator)
 
         assert quant.to_string(quantity) == ouput_str
         assert str(quantity) == ouput_str

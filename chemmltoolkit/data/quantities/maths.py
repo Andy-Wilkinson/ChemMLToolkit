@@ -1,58 +1,23 @@
+import numpy as np
 from chemmltoolkit.data.quantities import Quantity
 import math
 
 
 def add(a: Quantity, b: Quantity) -> Quantity:
-    def _compare_operators(set_a, set_b):
-        return (a.operator in set_a and b.operator in set_b) \
-            or (b.operator in set_a and a.operator in set_b)
+    val_min = a.val_min + b.val_min
+    val_max = a.val_max + b.val_max
+    eq_min = a.eq_min and b.eq_min
+    eq_max = a.eq_max and b.eq_max
+    error = a.error + b.error
 
-    if a.operator != '-' and b.operator != '-':
-        value = a.value + b.value
-        if a.operator is None and b.operator is None:
-            operator = None
-        elif _compare_operators(['>'], [None, '>', '>=']):
-            operator = '>'
-        elif _compare_operators(['>='], [None, '>=']):
-            operator = '>='
-        elif _compare_operators(['<'], [None, '<', '<=']):
-            operator = '<'
-        elif _compare_operators(['<='], [None, '<=']):
-            operator = '<='
-        elif a.operator == '~' or b.operator == '~':
-            operator = '~'
-
-    else:
-        if a.operator != '-':
-            a, b = b, a
-        if b.operator is None:
-            value = (a.value[0] + b.value, a.value[1] + b.value)
-            operator = '-'
-        elif b.operator == '-':
-            value = (a.value[0] + b.value[0], a.value[1] + b.value[1])
-            operator = '-'
-        elif b.operator in ['>', '>=']:
-            value = a.value[0] + b.value
-            operator = b.operator
-        elif b.operator in ['<', '<=']:
-            value = a.value[1] + b.value
-            operator = b.operator
-
-    return Quantity(value, operator)
+    return Quantity(val_min, val_max, eq_min, eq_max, error)
 
 
 def isclose(a: Quantity, b: Quantity, rel_tol=1e-9, abs_tol=0.0) -> bool:
-    if a.operator != b.operator:
-        return False
-
-    if a.operator == '-':
-        return math.isclose(a.value[0], b.value[0],
-                            rel_tol=rel_tol, abs_tol=abs_tol) and \
-            math.isclose(a.value[1], b.value[1],
-                         rel_tol=rel_tol, abs_tol=abs_tol)
-    else:
-        return math.isclose(a.value, b.value,
-                            rel_tol=rel_tol, abs_tol=abs_tol)
+    return math.isclose(a.val_min, b.val_min,
+                        rel_tol=rel_tol, abs_tol=abs_tol) and \
+        math.isclose(a.val_max, b.val_max,
+                     rel_tol=rel_tol, abs_tol=abs_tol)
 
 
 def log10(x: Quantity) -> Quantity:
@@ -60,26 +25,15 @@ def log10(x: Quantity) -> Quantity:
 
 
 def map_value(x: Quantity, fn) -> Quantity:
-    if x.operator == '-':
-        min_value, max_value = x.value
-        return Quantity((fn(min_value), fn(max_value)), x.operator)
-    else:
-        return Quantity(fn(x.value), x.operator)
+    val_min = -np.inf if x.val_min == -np.inf else fn(x.val_min)
+    val_max = np.inf if x.val_max == np.inf else fn(x.val_max)
+    error = x.error if x.error in [0.0, np.inf] else fn(x.error)
+
+    return Quantity(val_min, val_max, x.eq_min, x.eq_max, error)
 
 
 def neg(a: Quantity) -> Quantity:
-    if a.operator in [None, '~']:
-        return Quantity(-a.value, a.operator)
-    if a.operator == '-':
-        return Quantity((-a.value[1], -a.value[0]), '-')
-    elif a.operator == '>':
-        return Quantity(-a.value, '<')
-    elif a.operator == '<':
-        return Quantity(-a.value, '>')
-    elif a.operator == '>=':
-        return Quantity(-a.value, '<=')
-    elif a.operator == '<=':
-        return Quantity(-a.value, '>=')
+    return Quantity(-a.val_max, -a.val_min, a.eq_max, a.eq_min, a.error)
 
 
 def pow(x: float, y: Quantity) -> Quantity:

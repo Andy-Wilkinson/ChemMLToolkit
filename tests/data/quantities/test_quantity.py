@@ -3,6 +3,19 @@ import chemmltoolkit.data.quantities as quant
 
 
 class TestQuantity(object):
+    def test_new(self):
+        q = quant.Quantity(1.2, 3.4, False, True, 0.2)
+
+        assert q.val_min == 1.2
+        assert q.val_max == 3.4
+        assert q.eq_min is False
+        assert q.eq_max is True
+        assert q.error == 0.2
+
+    def test_new_exception_invalid_range(self):
+        with pytest.raises(ValueError):
+            _ = quant.Quantity(3.4, 1.2, False, True, 0.2)
+
     @pytest.mark.parametrize("operator,value", [
         (None, 4.2),
         ('>', 4.2),
@@ -12,8 +25,8 @@ class TestQuantity(object):
         ('~', 4.2),
         ('-', (3.2, 5.2))
     ])
-    def test_new(self, operator, value):
-        q = quant.Quantity(value, operator)
+    def test_from_value(self, operator, value):
+        q = quant.Quantity.from_value(value, operator)
 
         assert q.operator == operator
         assert q.value == value
@@ -30,15 +43,15 @@ class TestQuantity(object):
         ('-', (4.2,)),
         ('-', (3.2, 4.2, 5.2)),
     ])
-    def test_new_exception_invalid_value(self, operator, value):
+    def test_from_value_exception_invalid_value(self, operator, value):
         with pytest.raises(ValueError):
-            _ = quant.Quantity(value, operator)
+            _ = quant.Quantity.from_value(value, operator)
 
     @pytest.mark.parametrize("operator", [
         ('X'),
         ('='),
         (''),
     ])
-    def test_new_exception_invalid_operator(self, operator):
+    def test_from_value_exception_invalid_operator(self, operator):
         with pytest.raises(ValueError):
-            _ = quant.Quantity(4.2, operator)
+            _ = quant.Quantity.from_value(4.2, operator)

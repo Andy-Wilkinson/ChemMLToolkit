@@ -1,9 +1,44 @@
+import numpy as np
 from chemmltoolkit.data.quantities._constants \
     import operators_all, operators_range
 
 
 class Quantity:
-    def __init__(self, value, operator):
+    def __init__(self, val_min, val_max, eq_min, eq_max, error):
+        if val_min > val_max:
+            raise ValueError(
+                '`val_min` must be less than or equal to `val_max`.')
+
+        self.val_min = val_min
+        self.val_max = val_max
+        self.eq_min = eq_min
+        self.eq_max = eq_max
+        self.error = error
+
+    @property
+    def value(self):
+        if self.val_min == self.val_max:
+            return self.val_min
+        if self.val_min == -np.inf:
+            return self.val_max
+        elif self.val_max == np.inf:
+            return self.val_min
+        else:
+            return (self.val_min, self.val_max)
+
+    @property
+    def operator(self):
+        if self.val_min == self.val_max:
+            return '~' if self.error == np.inf else None
+        if self.val_min == -np.inf:
+            return '<=' if self.eq_max else '<'
+        elif self.val_max == np.inf:
+            return '>=' if self.eq_min else '>'
+        else:
+            return '-'
+
+    @staticmethod
+    def from_value(value, operator):
         if operator not in operators_all:
             raise ValueError(f'Invalid `operator` "{operator}".')
         if operator in operators_range:
@@ -15,8 +50,22 @@ class Quantity:
             if type(value) is not float:
                 raise ValueError('The `value` must be a float.')
 
-        self.value = value
-        self.operator = operator
+        if operator is None:
+            return Quantity(value, value, True, True, 0.0)
+        elif operator == '~':
+            return Quantity(value, value, True, True, np.inf)
+        elif operator == '>':
+            return Quantity(value, np.inf, False, False, 0.0)
+        elif operator == '<':
+            return Quantity(-np.inf, value, False, False, 0.0)
+        elif operator == '>=':
+            return Quantity(value, np.inf, True, False, 0.0)
+        elif operator == '<=':
+            return Quantity(-np.inf, value, False, True, 0.0)
+        elif operator == '-':
+            return Quantity(value[0], value[1], True, True, 0.0)
+        else:
+            raise ValueError(f'Invalid `operator` "{operator}".')
 
     def __str__(self):
         from chemmltoolkit.data.quantities.string_conv import to_string
@@ -34,15 +83,19 @@ class Quantity:
         if not isinstance(other, Quantity):
             return False
 
-        return self.value == other.value \
-            and self.operator == other.operator
+        return self.val_min == other.val_min \
+            and self.val_max == other.val_max \
+            and self.eq_min == other.eq_min \
+            and self.eq_max == other.eq_max \
+            and self.error == other.error
 
     def __neg__(self):
         from chemmltoolkit.data.quantities.maths import neg
         return neg(self)
 
     def __pos__(self):
-        return Quantity(self.value, self.operator)
+        return Quantity(self.val_min, self.val_max,
+                        self.eq_min, self.eq_max, self.error)
 
     def __sub__(self, other):
         from chemmltoolkit.data.quantities.maths import sub
