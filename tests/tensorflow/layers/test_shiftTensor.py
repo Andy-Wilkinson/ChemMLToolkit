@@ -80,14 +80,14 @@ class TestShiftTensor(tf.test.TestCase):
         self.assertAllEqual(output.shape, computed_shape)
 
     def test_serialize(self):
-        input = np.array([
+        input = np.array([[
             [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 2, 3]],
             [[2, 4, 6], [8, 2, 4], [6, 8, 2], [4, 6, 8]],
-        ])
-        expected_output = [
+        ]])
+        expected_output = [[
             [[5, 5, 5], [5, 5, 5], [1, 2, 3], [4, 5, 6]],
             [[5, 5, 5], [5, 5, 5], [2, 4, 6], [8, 2, 4]],
-        ]
+        ]]
 
         model_input = tf.keras.Input(shape=input.shape)
         x = ShiftTensor(2, padding_value=5)(model_input)
