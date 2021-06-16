@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Any, Optional, Tuple, Union
 import numpy as np
-from chemmltoolkit.data.quantities._constants \
-    import operators_all, operators_range
 
 
 class Quantity:
@@ -43,33 +41,30 @@ class Quantity:
     @staticmethod
     def from_value(value: Union[float, Tuple[float, float]],
                    operator: Optional[str]):
-        if operator not in operators_all:
-            raise ValueError(f'Invalid `operator` "{operator}".')
-        if operator in operators_range:
-            if (type(value) is not tuple) or (len(value) != 2) \
+        if operator == '-':
+            if not isinstance(value, tuple) or (len(value) != 2) \
                     or (type(value[0]) is not float) \
                     or (type(value[1]) is not float):
                 raise ValueError('The `value` must be a tuple of two floats.')
+            return Quantity(value[0], value[1], True, True, 0.0)
         else:
             if type(value) is not float:
                 raise ValueError('The `value` must be a float.')
 
-        if operator is None:
-            return Quantity(value, value, True, True, 0.0)
-        elif operator == '~':
-            return Quantity(value, value, True, True, np.inf)
-        elif operator == '>':
-            return Quantity(value, np.inf, False, False, 0.0)
-        elif operator == '<':
-            return Quantity(-np.inf, value, False, False, 0.0)
-        elif operator == '>=':
-            return Quantity(value, np.inf, True, False, 0.0)
-        elif operator == '<=':
-            return Quantity(-np.inf, value, False, True, 0.0)
-        elif operator == '-':
-            return Quantity(value[0], value[1], True, True, 0.0)
-        else:
-            raise ValueError(f'Invalid `operator` "{operator}".')
+            if operator is None:
+                return Quantity(value, value, True, True, 0.0)
+            elif operator == '~':
+                return Quantity(value, value, True, True, np.inf)
+            elif operator == '>':
+                return Quantity(value, np.inf, False, False, 0.0)
+            elif operator == '<':
+                return Quantity(-np.inf, value, False, False, 0.0)
+            elif operator == '>=':
+                return Quantity(value, np.inf, True, False, 0.0)
+            elif operator == '<=':
+                return Quantity(-np.inf, value, False, True, 0.0)
+            else:
+                raise ValueError(f'Invalid `operator` "{operator}".')
 
     def __str__(self):
         from chemmltoolkit.data.quantities.string_conv import to_string
