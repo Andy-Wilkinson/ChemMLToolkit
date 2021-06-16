@@ -1,3 +1,4 @@
+from typing import Optional
 import pytest
 import numpy as np
 import chemmltoolkit.data.quantities as quant
@@ -36,10 +37,10 @@ class TestStringConv(object):
     @pytest.mark.parametrize("input_str,value,operator,units",
                              parameters_from_string)
     def test_from_string(self,
-                         input_str,
-                         value,
-                         operator,
-                         units):
+                         input_str: str,
+                         value: float,
+                         operator: Optional[str],
+                         units: str):
         quantity = quant.from_string(input_str)
 
         assert np.isclose(quantity.value, value).all()
@@ -48,10 +49,10 @@ class TestStringConv(object):
     @pytest.mark.parametrize("input_str,value,operator,units",
                              parameters_from_string)
     def test_from_string_with_units(self,
-                                    input_str,
-                                    value,
-                                    operator,
-                                    units):
+                                    input_str: str,
+                                    value: float,
+                                    operator: Optional[str],
+                                    units: str):
         quantity, result_units = quant.from_string(
             input_str, return_units=True)
 
@@ -73,9 +74,9 @@ class TestStringConv(object):
         ('9.5-10.5', (9.5, 10.5), '-'),
     ])
     def test_to_string(self,
-                       ouput_str,
-                       value,
-                       operator):
+                       ouput_str: str,
+                       value: float,
+                       operator: Optional[str]):
         quantity = quant.Quantity.from_value(value, operator)
 
         assert quant.to_string(quantity) == ouput_str

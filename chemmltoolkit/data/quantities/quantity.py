@@ -1,10 +1,13 @@
+from __future__ import annotations
+from typing import Any, Optional, Tuple, Union
 import numpy as np
 from chemmltoolkit.data.quantities._constants \
     import operators_all, operators_range
 
 
 class Quantity:
-    def __init__(self, val_min, val_max, eq_min, eq_max, error):
+    def __init__(self, val_min: float, val_max: float,
+                 eq_min: bool, eq_max: bool, error: float):
         if val_min > val_max:
             raise ValueError(
                 '`val_min` must be less than or equal to `val_max`.')
@@ -38,7 +41,8 @@ class Quantity:
             return '-'
 
     @staticmethod
-    def from_value(value, operator):
+    def from_value(value: Union[float, Tuple[float, float]],
+                   operator: Optional[str]):
         if operator not in operators_all:
             raise ValueError(f'Invalid `operator` "{operator}".')
         if operator in operators_range:
@@ -75,11 +79,11 @@ class Quantity:
         from chemmltoolkit.data.quantities.string_conv import to_string
         return to_string(self)
 
-    def __add__(self, other):
+    def __add__(self, other: Quantity):
         from chemmltoolkit.data.quantities.maths import add
         return add(self, other)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any):
         if not isinstance(other, Quantity):
             return False
 
@@ -97,6 +101,6 @@ class Quantity:
         return Quantity(self.val_min, self.val_max,
                         self.eq_min, self.eq_max, self.error)
 
-    def __sub__(self, other):
+    def __sub__(self, other: Quantity):
         from chemmltoolkit.data.quantities.maths import sub
         return sub(self, other)

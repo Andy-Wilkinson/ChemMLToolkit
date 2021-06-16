@@ -1,3 +1,4 @@
+from typing import Any, Optional, Tuple, Union
 import pytest
 import chemmltoolkit.data.quantities as quant
 
@@ -25,13 +26,14 @@ class TestQuantity(object):
         ('~', 4.2),
         ('-', (3.2, 5.2))
     ])
-    def test_from_value(self, operator, value):
+    def test_from_value(self, operator: str,
+                        value: Union[float, Tuple[float, float]]):
         q = quant.Quantity.from_value(value, operator)
 
         assert q.operator == operator
         assert q.value == value
 
-    @pytest.mark.parametrize("operator,value", [
+    @ pytest.mark.parametrize("operator,value", [
         (None, None),
         (None, 'XXX'),
         (None, (4.2, 5.3)),
@@ -43,15 +45,17 @@ class TestQuantity(object):
         ('-', (4.2,)),
         ('-', (3.2, 4.2, 5.2)),
     ])
-    def test_from_value_exception_invalid_value(self, operator, value):
+    def test_from_value_exception_invalid_value(self,
+                                                operator: Optional[str],
+                                                value: Any):
         with pytest.raises(ValueError):
             _ = quant.Quantity.from_value(value, operator)
 
-    @pytest.mark.parametrize("operator", [
-        ('X'),
-        ('='),
-        (''),
+    @ pytest.mark.parametrize("operator", [
+        ('X',),
+        ('=',),
+        ('',),
     ])
-    def test_from_value_exception_invalid_operator(self, operator):
+    def test_from_value_exception_invalid_operator(self, operator: str):
         with pytest.raises(ValueError):
             _ = quant.Quantity.from_value(4.2, operator)
