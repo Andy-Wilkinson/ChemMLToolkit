@@ -6,7 +6,6 @@ unit_prefix_dict = {
 }
 
 operators_all = [None, '>', '<', '>=', '<=', '~', '-']
-operators_range = ['-']
 
 units = ['M', 'g']
 

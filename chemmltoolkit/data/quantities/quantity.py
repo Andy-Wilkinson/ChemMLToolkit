@@ -17,7 +17,7 @@ class Quantity:
         self.error = error
 
     @property
-    def value(self):
+    def value(self) -> Union[float, Tuple[float, float]]:
         if self.val_min == self.val_max:
             return self.val_min
         if self.val_min == -np.inf:
@@ -28,7 +28,7 @@ class Quantity:
             return (self.val_min, self.val_max)
 
     @property
-    def operator(self):
+    def operator(self) -> Optional[str]:
         if self.val_min == self.val_max:
             return '~' if self.error == np.inf else None
         if self.val_min == -np.inf:
