@@ -15,11 +15,11 @@ class TestAddSelfLoops(tf.test.TestCase):
         input = np.array([
             [[0, 1, 0], [1, 0, 0], [0, 1, 0]],
             [[0, 2, 3], [2, 0, 4], [3, 4, 0]],
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [[1, 1, 0], [1, 1, 0], [0, 1, 1]],
             [[1, 2, 3], [2, 1, 4], [3, 4, 1]],
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output)
 
@@ -33,7 +33,7 @@ class TestAddSelfLoops(tf.test.TestCase):
                 [[0, 3, 4], [1, 0, 1], [0, 1, 0]],
                 [[0, 1, 3], [2, 0, 4], [3, 4, 0]],
             ]
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [
                 [[1, 1, 0], [1, 1, 0], [0, 1, 1]],
@@ -43,7 +43,7 @@ class TestAddSelfLoops(tf.test.TestCase):
                 [[1, 3, 4], [1, 1, 1], [0, 1, 1]],
                 [[1, 1, 3], [2, 1, 4], [3, 4, 1]],
             ]
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output)
 
@@ -66,11 +66,11 @@ class TestAddSelfLoops(tf.test.TestCase):
         input = TensorGraph(node_features, np.array([[
             [[0, 1, 0], [1, 0, 0], [0, 1, 0]],
             [[0, 2, 3], [2, 0, 4], [3, 4, 0]],
-        ]], dtype=np.float))
+        ]], dtype=float))
         expected_output = TensorGraph(node_features, np.array([[
             [[1, 1, 0], [1, 1, 0], [0, 1, 1]],
             [[1, 2, 3], [2, 1, 4], [3, 4, 1]],
-        ]], dtype=np.float))
+        ]], dtype=float))
 
         model_input = TensorGraphInput(
             TensorGraphShape(num_nodes=3, edge_dims=2))

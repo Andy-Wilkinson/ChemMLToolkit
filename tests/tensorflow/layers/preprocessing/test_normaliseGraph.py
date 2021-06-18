@@ -15,11 +15,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([
             [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
             [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [[0, 0, 1], [0, 0, 1], [0.5, 0.5, 0]],
             [[0.2, 0.4, 0.4], [0.2, 0.3, 0.5], [0.2, 0.5, 0.3]],
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output)
 
@@ -27,11 +27,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([[
             [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
             [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
-        ]], dtype=np.float)
+        ]], dtype=float)
         expected_output = np.array([[
             [[0, 0, 1], [0, 0, 1], [0.5, 0.5, 0]],
             [[0.2, 0.4, 0.4], [0.2, 0.3, 0.5], [0.2, 0.5, 0.3]],
-        ]], dtype=np.float)
+        ]], dtype=float)
 
         self._test_call(input, expected_output)
 
@@ -39,11 +39,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output)
 
@@ -51,11 +51,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([
             [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
             [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [[0, 0, 0.71], [0, 0, 0.71], [0.71, 0.71, 0]],
             [[0.2, 0.28, 0.28], [0.28, 0.3, 0.5], [0.28, 0.5, 0.3]],
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output, method='spectral')
 
@@ -63,11 +63,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([[
             [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
             [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
-        ]], dtype=np.float)
+        ]], dtype=float)
         expected_output = np.array([[
             [[0, 0, 0.71], [0, 0, 0.71], [0.71, 0.71, 0]],
             [[0.2, 0.28, 0.28], [0.28, 0.3, 0.5], [0.28, 0.5, 0.3]],
-        ]], dtype=np.float)
+        ]], dtype=float)
 
         self._test_call(input, expected_output, method='spectral')
 
@@ -75,11 +75,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = np.array([
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        ], dtype=np.float)
+        ], dtype=float)
         expected_output = np.array([
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-        ], dtype=np.float)
+        ], dtype=float)
 
         self._test_call(input, expected_output, method='spectral')
 
@@ -103,11 +103,11 @@ class TestNormaliseGraph(tf.test.TestCase):
         input = TensorGraph(node_features, np.array([[
             [[0, 0, 1], [0, 0, 1], [1, 1, 0]],
             [[1, 2, 2], [2, 3, 5], [2, 5, 3]],
-        ]], dtype=np.float))
+        ]], dtype=float))
         expected_output = TensorGraph(node_features, np.array([[
             [[0, 0, 0.71], [0, 0, 0.71], [0.71, 0.71, 0]],
             [[0.2, 0.28, 0.28], [0.28, 0.3, 0.5], [0.28, 0.5, 0.3]],
-        ]], dtype=np.float))
+        ]], dtype=float))
 
         model_input = TensorGraphInput(
             TensorGraphShape(num_nodes=3, edge_dims=2))
