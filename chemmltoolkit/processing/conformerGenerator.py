@@ -114,7 +114,8 @@ class ConformerGenerator():
         # Only keep the lowest energy conformers within each RMSD
         # Uses the procedure of Chem. Inf. Model., 2012, 52, 1146
         conformers = mol.GetConformers()
-        confIds_sorted = [conformers[i].GetId() for i in np.argsort(energies)]
+        confIds_sorted = [conformers[int(i)].GetId()
+                          for i in np.argsort(energies)]
         confIds_keep = []
         mol_noH = Chem.RemoveHs(mol)
 
