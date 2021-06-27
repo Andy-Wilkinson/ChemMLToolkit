@@ -54,7 +54,7 @@ def from_string(input: str, return_units: bool = False) -> Quantity:
         min_value = float(match.group('min_value'))
         max_value = float(match.group('max_value'))
 
-        quantity = Quantity(min_value, max_value, False, False, 0.0)
+        quantity = Quantity(min_value, max_value, True, True, 0.0)
         return quantity
 
     raise ValueError(f"Input is not a valid Quantity: '{input}'")
@@ -90,7 +90,7 @@ def from_string_with_units(input: str) -> Tuple[Quantity, str]:
         min_value = min_value * exponent
         max_value = max_value * exponent
 
-        quantity = Quantity(min_value, max_value, False, False, 0.0)
+        quantity = Quantity(min_value, max_value, True, True, 0.0)
         return (quantity, units)
 
     raise ValueError(f"Input is not a valid Quantity: '{input}'")
