@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 import pytest
 import numpy as np
 import chemmltoolkit.data.quantities as quant
