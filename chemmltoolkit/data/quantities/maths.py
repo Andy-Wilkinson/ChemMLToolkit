@@ -4,6 +4,23 @@ from chemmltoolkit.data.quantities import Quantity
 import math
 
 
+def absolute(a: Quantity) -> Quantity:
+    if a.val_min < 0 and a.val_max > 0:
+        abs_min = -a.val_min
+        if a.val_max > abs_min:
+            return Quantity(0, a.val_max, False, a.eq_max, a.error)
+        else:
+            return Quantity(0, abs_min, False, a.eq_min, a.error)
+    else:
+        abs_min = float.__abs__(a.val_min)
+        abs_max = float.__abs__(a.val_max)
+
+        if abs_min < abs_max:
+            return Quantity(abs_min, abs_max, a.eq_min, a.eq_max, a.error)
+        else:
+            return Quantity(abs_max, abs_min, a.eq_max, a.eq_min, a.error)
+
+
 def add(a: Quantity, b: Quantity) -> Quantity:
     val_min = a.val_min + b.val_min
     val_max = a.val_max + b.val_max

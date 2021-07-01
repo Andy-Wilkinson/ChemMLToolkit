@@ -3,6 +3,35 @@ import chemmltoolkit.data.quantities as quant
 
 
 class TestMaths(object):
+    @pytest.mark.parametrize("a_str,b_str", [
+        ('10', '10'),
+        ('-10', '10'),
+        ('0.001', '0.001'),
+        ('-0.001', '0.001'),
+        ('>10', '>10'),
+        ('<-10', '>10'),
+        ('<10', '>=0'),
+        ('>-10', '>=0'),
+        ('>=10', '>=10'),
+        ('<=-10', '>=10'),
+        ('<=10', '>=0'),
+        ('>=-10', '>=0'),
+        ('~10', '~10'),
+        ('~-10', '~10'),
+        ('-3--2', '2-3'),
+        ('-2-0', '0-2'),
+        ('-2-1', '0-2'),
+        ('-1-2', '0-2'),
+        ('0-2', '0-2'),
+        ('2-3', '2-3'),
+    ])
+    def test_absolute(self, a_str: str, b_str: str):
+        a = quant.from_string(a_str)
+        b = quant.from_string(b_str)
+
+        assert quant.isclose(quant.absolute(a), b)
+        assert quant.isclose(abs(a), b)
+
     @pytest.mark.parametrize("a_str,b_str,expected_result_str", [
         ('10', '20', '30'),
         ('10', '-20', '-10'),

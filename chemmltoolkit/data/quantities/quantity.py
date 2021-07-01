@@ -74,6 +74,10 @@ class Quantity:
         from chemmltoolkit.data.quantities.string_conv import to_string
         return to_string(self)
 
+    def __abs__(self):
+        from chemmltoolkit.data.quantities.maths import absolute
+        return absolute(self)
+
     def __add__(self, other: Quantity):
         from chemmltoolkit.data.quantities.maths import add
         return add(self, other)
