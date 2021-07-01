@@ -1,4 +1,4 @@
-from typing import Callable, SupportsFloat
+from typing import Callable, Optional, SupportsFloat
 import numpy as np
 from chemmltoolkit.data.quantities import Quantity
 import math
@@ -14,6 +14,26 @@ def add(a: Quantity, b: Quantity) -> Quantity:
     return Quantity(val_min, val_max, eq_min, eq_max, error)
 
 
+def greater(a: Quantity, b: Quantity) -> Optional[bool]:
+    if a.val_min > b.val_max:
+        return True
+    elif (a.val_min == b.val_max) and (a.eq_min is False or b.eq_max is False):
+        return True
+    elif a.val_max <= b.val_min:
+        return False
+    return None
+
+
+def greater_equal(a: Quantity, b: Quantity) -> Optional[bool]:
+    if a.val_min >= b.val_max:
+        return True
+    elif a.val_max < b.val_min:
+        return False
+    elif (a.val_max == b.val_min) and (a.eq_max is False or b.eq_min is False):
+        return False
+    return None
+
+
 def isclose(a: Quantity, b: Quantity,
             rel_tol: SupportsFloat = 1e-9,
             abs_tol: SupportsFloat = 0.0) -> bool:
@@ -21,6 +41,26 @@ def isclose(a: Quantity, b: Quantity,
                         rel_tol=rel_tol, abs_tol=abs_tol) and \
         math.isclose(a.val_max, b.val_max,
                      rel_tol=rel_tol, abs_tol=abs_tol)
+
+
+def less(a: Quantity, b: Quantity) -> Optional[bool]:
+    if a.val_max < b.val_min:
+        return True
+    elif (a.val_max == b.val_min) and (a.eq_max is False or b.eq_min is False):
+        return True
+    elif a.val_min >= b.val_max:
+        return False
+    return None
+
+
+def less_equal(a: Quantity, b: Quantity) -> Optional[bool]:
+    if a.val_max <= b.val_min:
+        return True
+    elif a.val_min > b.val_max:
+        return False
+    elif (a.val_min == b.val_max) and (a.eq_min is False or b.eq_max is False):
+        return False
+    return None
 
 
 def log10(x: Quantity) -> Quantity:

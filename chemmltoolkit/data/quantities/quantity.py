@@ -88,6 +88,22 @@ class Quantity:
             and self.eq_max == other.eq_max \
             and self.error == other.error
 
+    def __ge__(self, other: Quantity):
+        from chemmltoolkit.data.quantities.maths import greater_equal
+        return greater_equal(self, other)
+
+    def __gt__(self, other: Quantity):
+        from chemmltoolkit.data.quantities.maths import greater
+        return greater(self, other)
+
+    def __le__(self, other: Quantity):
+        from chemmltoolkit.data.quantities.maths import less_equal
+        return less_equal(self, other)
+
+    def __lt__(self, other: Quantity):
+        from chemmltoolkit.data.quantities.maths import less
+        return less(self, other)
+
     def __neg__(self):
         from chemmltoolkit.data.quantities.maths import neg
         return neg(self)
