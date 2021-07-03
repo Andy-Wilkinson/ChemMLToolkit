@@ -29,7 +29,7 @@ class TestMaths(object):
         a = quant.from_string(a_str)
         b = quant.from_string(b_str)
 
-        assert quant.isclose(quant.absolute(a), b)
+        assert quant.isclose(quant.abs(a), b)
         assert quant.isclose(abs(a), b)
 
     @pytest.mark.parametrize("a_str,b_str,expected_result_str", [
