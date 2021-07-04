@@ -8,6 +8,7 @@ dependencies:
   - pandas
   - tensorflow>=2.0
   - rdkit
+  - biopython
   - flake8
   - pytest
   - pytest-cov
