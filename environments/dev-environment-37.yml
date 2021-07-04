@@ -9,6 +9,7 @@ dependencies:
   - tensorflow>=2.0
   - rdkit
   - biopython
+  - openbabel
   - flake8
   - pytest
   - pytest-cov
