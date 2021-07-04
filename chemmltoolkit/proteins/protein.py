@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Generator, Optional, Tuple, Union
+from typing import Generator, Optional, Text, TextIO, Tuple, Union
 import gzip
+from enum import Flag
 from pathlib import Path
 import Bio.PDB as biopdb
 from Bio.PDB.Structure import Structure as bpStructure
@@ -8,6 +9,28 @@ from Bio.PDB.Chain import Chain as bpChain
 from Bio.PDB.Residue import Residue as bpResidue
 from Bio.PDB.Polypeptide import standard_aa_names
 from Bio.PDB.Polypeptide import three_to_one
+
+
+class ResidueType(Flag):
+    RESIDUE = 1
+    HETERORESIDUE = 2
+    WATER = 4
+    ALL = RESIDUE | HETERORESIDUE | WATER
+
+    def get_id_str(self):
+        return ' ' if ResidueType.RESIDUE in self else '' + \
+            'H' if ResidueType.HETERORESIDUE in self else '' + \
+            'W' if ResidueType.HETERORESIDUE in self else ''
+
+
+def _save(entity: Union[Protein, Chain, Residue],
+          filename: Union[str, Path, TextIO]) -> None:
+    if isinstance(filename, Path):
+        filename = str(filename)
+
+    io = biopdb.PDBIO()
+    io.set_structure(entity.as_biopython())
+    io.save(filename)
 
 
 class Protein():
@@ -41,10 +64,8 @@ class Protein():
         chains = self.as_biopython().get_chains()
         return (Chain(self, c.id, biopython=c) for c in chains)
 
-    def save(self, filename: Union[str, Path]):
-        io = biopdb.PDBIO()
-        io.set_structure(self.as_biopython())
-        io.save(str(filename))
+    def save(self, filename: Union[str, Path, TextIO]):
+        _save(self, filename)
 
     @staticmethod
     def from_file(filename: Union[str, Path]) -> Protein:
@@ -70,7 +91,7 @@ class Chain():
 
     @property
     def name(self) -> str:
-        return f'{self.protein.id}_{self.id}'
+        return f'{self.protein.name}_{self.id}'
 
     def as_biopython(self) -> bpChain:
         if not self._biopython:
@@ -80,9 +101,14 @@ class Chain():
 
         return self._biopython
 
-    def get_residues(self) -> Generator[Residue, None, None]:
+    def get_residues(self,
+                     residue_type: ResidueType = ResidueType.ALL
+                     ) -> Generator[Residue, None, None]:
+
+        residue_ids = residue_type.get_id_str()
         residues = self.as_biopython().get_residues()
-        return (Residue(self, r.id, biopython=r) for r in residues)
+        return (Residue(self, r.id, biopython=r) for r in residues
+                if r.id[0][0] in residue_ids)
 
     def get_sequence(self):
         def _three_to_one(s: str):
@@ -94,10 +120,8 @@ class Chain():
         sequence = ''.join(sequence)
         return sequence
 
-    def save(self, filename: Union[str, Path]):
-        io = biopdb.PDBIO()
-        io.set_structure(self.as_biopython())
-        io.save(str(filename))
+    def save(self, filename: Union[str, Path, TextIO]):
+        _save(self, filename)
 
     def __repr__(self):
         return f'<Chain id={self.id}>'
@@ -110,6 +134,22 @@ class Residue():
         self.id = id
         self._biopython = biopython
 
+    @property
+    def name(self) -> str:
+        return f'{self.chain.name}_{self.residue_id}'
+
+    @property
+    def num_atoms(self):
+        return sum(1 for _ in self.as_biopython().get_atoms())
+
+    @property
+    def residue_id(self):
+        return f'{self.residue_name}{self.id[1]}'
+
+    @property
+    def residue_name(self):
+        return self.as_biopython().resname
+
     def as_biopython(self) -> bpResidue:
         if not self._biopython:
             chain = self.chain.as_biopython()
@@ -117,6 +157,9 @@ class Residue():
             self._biopython = residues[0]
 
         return self._biopython
+
+    def save(self, filename: Union[str, Path, TextIO]):
+        _save(self, filename)
 
     def __repr__(self):
         return f'<Residue id={self.id}>'

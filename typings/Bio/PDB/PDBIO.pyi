@@ -1,5 +1,6 @@
 from typing import List, TextIO, Union
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Residue import Residue
 from Bio.PDB.Structure import Structure
 
 """
@@ -49,7 +50,9 @@ class StructureIO:
         """Initialise."""
         ...
 
-    def set_structure(self, pdb_object: Union[Structure, Chain]) -> None:
+    def set_structure(self,
+                      pdb_object: Union[Structure, Chain, Residue]
+                      ) -> None:
         """Check what the user is providing and build a structure."""
         ...
 
