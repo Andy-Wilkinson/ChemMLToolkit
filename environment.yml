@@ -1,10 +1,10 @@
 # A conda environment file for building and testing the ChemMLToolkit
 
-name: dev-environment
+name: chemmltoolkit
 channels:
   - conda-forge
 dependencies:
-  - python=3.7
+  - python=3.9
   - pandas
   - tensorflow>=2.0
   - rdkit

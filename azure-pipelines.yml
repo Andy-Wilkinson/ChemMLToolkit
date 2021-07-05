@@ -19,8 +19,8 @@ jobs:
   strategy:
     matrix:
       Python37:
-        python.version: '3.7'
-        conda.environment: 'environments/dev-environment-37.yml'
+        python.version: '3.9'
+        conda.environment: './environment.yml'
     maxParallel: 4
 
   steps:
@@ -31,12 +31,12 @@ jobs:
     displayName: Create Anaconda environment
 
   - script: |
-      source activate dev-environment
+      source activate chemmltoolkit
       flake8 .
     displayName: 'Run lint tests'
 
   - script: |
-      source activate dev-environment
+      source activate chemmltoolkit
       pytest tests --doctest-modules --junitxml=junit/test-results.xml --cov=chemmltoolkit --cov-report=xml --cov-report=html
     displayName: 'Test with pytest'
 
@@ -62,14 +62,14 @@ jobs:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
 
-  - script: conda env create --quiet --file environments/dev-environment-37.yml
+  - script: conda env create --quiet --file ./environment.yml
     displayName: Create Anaconda environment
 
   - script: sed -i "s/'$/.dev$(Build.BuildNumber)'/g" chemmltoolkit/__version__.py
     displayName: 'Update version string'
 
   - script: |
-      source activate dev-environment
+      source activate chemmltoolkit
       python setup.py sdist bdist_wheel
     displayName: 'Build project'
 
@@ -80,7 +80,7 @@ jobs:
     displayName: Add twine credentials
 
   - script: |
-      source activate dev-environment
+      source activate chemmltoolkit
       twine upload -r ChemMLToolkit --config-file $(PYPIRC_PATH) dist/*
       twine upload -r PyPi-Upload --config-file $(PYPIRC_PATH) dist/*
     displayName: Publish to Azure Artifacts
