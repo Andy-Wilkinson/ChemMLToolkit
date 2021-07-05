@@ -25,16 +25,12 @@ def convert_to_molecule(residue: Residue,
 
     if template_mol:
         pdb_mol = Chem.MolFromPDBBlock(residue_pdb_block)
-        # template_smiles = get_pdb_ligand_smiles(self.residue_name)
-        # template_mol = Chem.MolFromSmiles(template_smiles)
         try:
             pdb_mol = AssignBondOrdersFromTemplate(template_mol, pdb_mol)
             if pdb_mol.HasSubstructMatch(template_mol):
                 mol = pdb_mol
         except ValueError:
             pass
-
-        # template_success = mol.HasSubstructMatch(template_mol)
 
     # Otherwise let OpenBabel determine the bond orders
 

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generator, Optional, Text, TextIO, Tuple, Union
+from typing import Generator, Optional, TextIO, Tuple, Union
 import gzip
 from enum import Flag
 from pathlib import Path

@@ -18,7 +18,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   strategy:
     matrix:
-      Python37:
+      Python39:
         python.version: '3.9'
         conda.environment: './environment.yml'
     maxParallel: 4
