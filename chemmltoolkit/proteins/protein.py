@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generator, Optional, TextIO, Tuple, Union
+from typing import Generator, List, Optional, TextIO, Tuple, Union
 import gzip
 from enum import Flag
 from pathlib import Path
@@ -101,14 +101,25 @@ class Chain():
 
         return self._biopython
 
+    def get_residue(self,
+                    residue_number: int) -> Optional[Residue]:
+        for r in self.as_biopython().get_residues():
+            if r.id[1] == residue_number:
+                return Residue(self, r.id, biopython=r)
+        return None
+
     def get_residues(self,
-                     residue_type: ResidueType = ResidueType.ALL
+                     residue_type: ResidueType = ResidueType.ALL,
+                     residue_names: Optional[List[str]] = None,
                      ) -> Generator[Residue, None, None]:
+        def filter(r: bpResidue):
+            return r.id[0][0] in residue_ids \
+                and (r.resname in residue_names if residue_names else True)
 
         residue_ids = residue_type.get_id_str()
         residues = self.as_biopython().get_residues()
         return (Residue(self, r.id, biopython=r) for r in residues
-                if r.id[0][0] in residue_ids)
+                if filter(r))
 
     def get_sequence(self):
         def _three_to_one(s: str):
