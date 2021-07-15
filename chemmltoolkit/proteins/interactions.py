@@ -1,9 +1,8 @@
-from typing import Generator, List, Optional
+from typing import Generator, List, Optional, Union
 import math
 import numpy as np
 from numpy.typing import NDArray
 from . import Residue
-
 
 
 def get_covalent_residue(residue: Residue,
@@ -31,8 +30,9 @@ def get_covalent_residue(residue: Residue,
     return None
 
 
-def contact_distance(a: List[Residue],
-                     b: List[Residue]) -> float:
+def contact_distance(a: List[Union[Residue, NDArray[np.float32]]],
+                     b: List[Union[Residue, NDArray[np.float32]]]
+                     ) -> float:
     def _distance_squared(coords_a: NDArray[np.float32],
                           coords_b: NDArray[np.float32]) -> float:
         return np.sum((coords_a-coords_b)**2)
@@ -43,8 +43,11 @@ def contact_distance(a: List[Residue],
         for to_coord in _get_atom_coordinates(b)))
 
 
-def _get_atom_coordinates(items: List[Residue]
+def _get_atom_coordinates(items: List[Union[Residue, NDArray[np.float32]]]
                           ) -> Generator[NDArray[np.float32], None, None]:
     for item in items:
-        for atom in item.as_biopython().get_atoms():
-            yield atom.coord
+        if isinstance(item, Residue):
+            for atom in item.as_biopython().get_atoms():
+                yield atom.coord
+        else:
+            yield item
