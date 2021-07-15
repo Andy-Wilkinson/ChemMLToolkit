@@ -10,6 +10,7 @@ dependencies:
   - rdkit
   - biopython
   - openbabel
+  - oddt
   - flake8
   - pytest
   - pytest-cov
