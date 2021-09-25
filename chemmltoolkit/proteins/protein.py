@@ -9,6 +9,7 @@ from Bio.PDB.Chain import Chain as bpChain
 from Bio.PDB.Residue import Residue as bpResidue
 from Bio.PDB.Polypeptide import standard_aa_names
 from Bio.PDB.Polypeptide import three_to_one
+import oddt
 
 
 class ResidueType(Flag):
@@ -38,6 +39,7 @@ class Protein():
         self.id = id
         self.filename: Optional[Path] = None
         self._biopython: Optional[bpStructure] = None
+        self._oddt: Optional[oddt.toolkit.Molecule] = None
 
     @property
     def name(self) -> str:
@@ -56,6 +58,18 @@ class Protein():
                 raise Exception('No filename is specified.')
 
         return self._biopython
+
+    def as_oddt(self) -> oddt.toolkit.Molecule:
+        if not self._oddt:
+            if self.filename:
+                mol = next(oddt.toolkit.readfile('pdb', str(self.filename)))
+                mol.protein = True
+
+                self._oddt = mol
+            else:
+                raise Exception('No filename is specified.')
+
+        return self._oddt
 
     def get_chain(self, chain_id: str) -> Chain:
         return Chain(self, chain_id)

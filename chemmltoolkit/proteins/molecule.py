@@ -1,4 +1,5 @@
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Dict, Optional, Union
 from . import Residue
 from chemmltoolkit.utils.data_utils import get_file
 import csv
@@ -7,6 +8,7 @@ import openbabel.pybel as pybel
 from rdkit import Chem
 from rdkit.Chem.AllChem import AssignBondOrdersFromTemplate
 from rdkit.Chem import Mol
+import oddt
 
 
 pdb_ligand_dictionary: Optional[Dict[str, str]] = None
@@ -70,3 +72,11 @@ def _get_pdb_ligand_dictionary() -> Dict[str, str]:
 def get_pdb_ligand(residue_name: str) -> Optional[Mol]:
     smiles = _get_pdb_ligand_dictionary().get(residue_name)
     return Chem.MolFromSmiles(smiles) if smiles else None
+
+
+def read_oddt_molecule(filename: Union[str, Path]) -> oddt.toolkit.Molecule:
+    if isinstance(filename, str):
+        filename = Path(filename)
+
+    mol = next(oddt.toolkit.readfile('mol', str(filename)))
+    return mol

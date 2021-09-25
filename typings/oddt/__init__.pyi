@@ -7,6 +7,7 @@ import subprocess
 import warnings
 import six
 from __future__ import absolute_import
+from .toolkits import ob as toolkit
 
 """Open Drug Discovery Toolkit
 ==============================
@@ -19,16 +20,21 @@ toolkit : module,
     Toolkits backend module, currenlty OpenBabel [ob] and RDKit [rdk].
     This setting is toolkit-wide, and sets given toolkit as default
 """
-toolkit = ...
-if 'ODDT_TOOLKIT' in os.environ:
-    ...
-else:
-    toolkit = ...
-def get_version(): # -> str | bytes:
+# toolkit = ...
+# if 'ODDT_TOOLKIT' in os.environ:
+#     ...
+# else:
+#     toolkit = ...
+
+
+def get_version():  # -> str | bytes:
     ...
 
+
 __version__ = ...
-def random_seed(i): # -> None:
+
+
+def random_seed(i):  # -> None:
     """
     Set global random seed for all underlying components.
     Use 'brute-force' approach, by setting undelying libraries' seeds.
@@ -39,4 +45,3 @@ def random_seed(i): # -> None:
             integer used as seed for random number generators
     """
     ...
-
