@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 from chemmltoolkit.utils.list_utils import flatten
 from chemmltoolkit.utils.list_utils import _is_iterable
 from chemmltoolkit.features.utils import get_feature_keys
@@ -15,7 +15,7 @@ class Featuriser:
     def __init__(self, features: list):
         self.features = features
 
-    def _process(self, data):
+    def _process(self, data) -> List[Any]:
         """Generates features for an individual data point.
 
         Args:

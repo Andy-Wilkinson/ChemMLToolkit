@@ -20,7 +20,8 @@ from .transform import *
 from .propagate import *
 from .random import *
 from .data.utils import load_graphs, save_graphs
-from ._deprecate.graph import DGLGraph as DGLGraphStale
+from ._deprecate.graph import DGLGraph
+# from ._deprecate.graph import DGLGraph as DGLGraphStale
 from ._deprecate.nodeflow import *
 
 """

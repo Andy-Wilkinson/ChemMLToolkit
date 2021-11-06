@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 from chemmltoolkit.features.featuriser import Featuriser
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import Mol
@@ -10,6 +10,7 @@ class AtomFeaturiser(Featuriser):
     Args:
         features: A list of features to generate.
     """
+
     def __init__(self, features: list):
         super(AtomFeaturiser, self).__init__(features)
 
@@ -24,7 +25,7 @@ class AtomFeaturiser(Featuriser):
         """
         return self._process(atom)
 
-    def process_molecule(self, mol: Mol):
+    def process_molecule(self, mol: Mol) -> List[List[Any]]:
         """Generates features for all atoms in a molecule.
 
         Args:

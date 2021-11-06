@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List, Tuple
 from chemmltoolkit.features.featuriser import Featuriser
 import numpy as np
 from rdkit.Chem import MolFromSmiles
@@ -26,7 +26,7 @@ class BondFeaturiser(Featuriser):
         """
         return self._process(bond)
 
-    def process_molecule(self, mol: Mol):
+    def process_molecule(self, mol: Mol) -> List[Tuple[int, int, List[Any]]]:
         """Generates features for all bond in a molecule.
 
         Args:
