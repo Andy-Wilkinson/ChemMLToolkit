@@ -2,15 +2,14 @@
 
 name: chemmltoolkit
 channels:
-  - pytorch
-  - dglteam
   - conda-forge
 dependencies:
   - python=3.9
   - pandas
+  - seaborn
   - tensorflow>=2.0
-  - pytorch
-  - dgl
+  - pytorch::pytorch
+  - dglteam::dgl
   - rdkit
   - biopython
   - openbabel
