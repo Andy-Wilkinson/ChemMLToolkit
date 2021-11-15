@@ -1,8 +1,9 @@
 from collections.abc import Iterable
 from collections.abc import MutableMapping
+from typing import Any, Dict, List, Tuple
 
 
-def flatten(l: list) -> list:  # noqa: E741
+def flatten(l: List[Any]) -> List[Any]:  # noqa: E741
     """Flattens a nested list into a flat list of elements.
 
     Args:
@@ -11,7 +12,7 @@ def flatten(l: list) -> list:  # noqa: E741
     Returns:
         The flattened list.
     """
-    def _flatten(l):  # noqa: E741
+    def _flatten(l: List[Any]):  # noqa: E741
         for el in l:
             if _is_iterable(el):
                 yield from flatten(el)
@@ -21,7 +22,7 @@ def flatten(l: list) -> list:  # noqa: E741
     return list(_flatten(l))
 
 
-def flatten_dict(d: dict, separator: str = '.') -> dict:
+def flatten_dict(d: Dict[Any, Any], separator: str = '.') -> Dict[Any, Any]:
     """Flattens a nested dictionary into a flat dictionary.
 
     This will flatten any nested dictionary items using the specified
@@ -35,8 +36,10 @@ def flatten_dict(d: dict, separator: str = '.') -> dict:
     Returns:
         The flattened dictionary.
     """
-    def _flatten_dict(d, separator, prefix):
-        items = []
+    def _flatten_dict(d: MutableMapping[Any, Any],
+                      separator: str,
+                      prefix: str) -> List[Tuple[Any, Any]]:
+        items: List[Tuple[Any, Any]] = []
         for k, v in d.items():
             new_key = prefix + k
             if isinstance(v, MutableMapping):
@@ -50,7 +53,7 @@ def flatten_dict(d: dict, separator: str = '.') -> dict:
     return dict(items)
 
 
-def merge_dict(d: dict, defaults: dict) -> dict:
+def merge_dict(d: Dict[Any, Any], defaults: Dict[Any, Any]) -> Dict[Any, Any]:
     """Merges a dictionary with a set of default values.
 
     This will combine the entries in two dictionaries, with the first
@@ -66,7 +69,7 @@ def merge_dict(d: dict, defaults: dict) -> dict:
     return {**defaults, **d}
 
 
-def one_hot(feature, tokens: list) -> list:
+def one_hot(feature: Any, tokens: List[Any]) -> List[int]:
     """One-hot encodes a feature.
 
     This will one-hot encode the feature, using a specified list of tokens.
@@ -81,7 +84,7 @@ def one_hot(feature, tokens: list) -> list:
     return [int(feature == token) for token in tokens]
 
 
-def pad_list(l: list, length: int, item) -> list:  # noqa: E741
+def pad_list(l: List[Any], length: int, item: Any) -> List[Any]:  # noqa: E741
     """Pads a list to the specified length.
 
     Note that if the input list is longer than the specified length it is not
@@ -98,7 +101,7 @@ def pad_list(l: list, length: int, item) -> list:  # noqa: E741
     return l + [item] * (length - len(l))
 
 
-def zip_expand(*args):
+def zip_expand(*args: Any):
     """Zips the arguments, expanding them to the largest length if required.
 
     This will perform a zip of the specified arguments. The resulting list
@@ -111,16 +114,38 @@ def zip_expand(*args):
     Returns:
         The zipped list.
     """
-    def _len_arg(arg):
-        return len(arg) if _is_iterable(arg) else 1
-
-    def _expand_arg(arg, size):
-        return arg if _is_iterable(arg) else [arg] * size
 
     size = max([_len_arg(arg) for arg in args])
-    args = [_expand_arg(arg, size) for arg in args]
-    return zip(*args)
+    args_list = [_expand_arg(arg, size) for arg in args]
+    return zip(*args_list)
 
 
-def _is_iterable(x):
+def dict_expand(d: Dict[Any, Any]) -> List[Dict[Any, Any]]:
+    """Converts a dictionary of lists to a list of dictionaries.
+
+    The resulting list will be of the same length as the longest dictionary
+    value. If any values are not lists then they will be repeated to the
+    required length.
+
+    Args:
+        d: The dictionary of arrays to expand.
+
+    Returns:
+        The resulting list of dictionaries.
+    """
+
+    size = max([_len_arg(arg) for arg in d.values()])
+    d = {k: _expand_arg(v, size) for k, v in d.items()}
+    return [{k: v[i] for k, v in d.items()} for i in range(size)]
+
+
+def _is_iterable(x: Any) -> bool:
     return isinstance(x, Iterable) and not isinstance(x, (str, bytes))
+
+
+def _len_arg(arg: Any) -> int:
+    return len(arg) if _is_iterable(arg) else 1
+
+
+def _expand_arg(arg: Any, size: int) -> List[Any]:
+    return arg if _is_iterable(arg) else [arg] * size

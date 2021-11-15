@@ -74,3 +74,29 @@ class TestListUtils(object):
         result = list_utils.zip_expand(*input)
         result = [x for x in result]
         assert result == expected_result
+
+    @pytest.mark.parametrize("input,expected_result", [
+        ({'A': [1, 2, 3], 'B': ['A', 'B', 'C']},
+            [{'A': 1, 'B': 'A'},
+             {'A': 2, 'B': 'B'},
+             {'A': 3, 'B': 'C'}]),
+        ({'A': [1, 2, 3], 'B': 'X'},
+            [{'A': 1, 'B': 'X'},
+             {'A': 2, 'B': 'X'},
+             {'A': 3, 'B': 'X'}]),
+        ({'A': [1, 2, 3], 'B': 'ABC'},
+            [{'A': 1, 'B': 'ABC'},
+             {'A': 2, 'B': 'ABC'},
+             {'A': 3, 'B': 'ABC'}]),
+        ({'A': 1, 'B': ['A', 'B', 'C']},
+            [{'A': 1, 'B': 'A'},
+             {'A': 1, 'B': 'B'},
+             {'A': 1, 'B': 'C'}]),
+        ({'A': [1, 2, 3], 'B': 9, 'C': [4, 5, 6]},
+            [{'A': 1, 'B': 9, 'C': 4},
+             {'A': 2, 'B': 9, 'C': 5},
+             {'A': 3, 'B': 9, 'C': 6}]),
+    ])
+    def test_dict_expand(self, input, expected_result):
+        result = list_utils.dict_expand(input)
+        assert result == expected_result
