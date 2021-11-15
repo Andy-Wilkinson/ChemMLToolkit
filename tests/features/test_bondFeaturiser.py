@@ -131,7 +131,8 @@ class TestBondFeaturiser(object):
         ([bf.is_ring], ['is_ring']),
         ([bf.is_ringsize(3)], ['is_ringsize(3)']),
         ([feat.one_hot(bf.bond_type)],
-            ['one_hot(bond_type, tokens=[SINGLE,DOUBLE,TRIPLE,AROMATIC])']),
+            ['one_hot(bond_type, tokens=[SINGLE,DOUBLE,TRIPLE,AROMATIC], ' + \
+                'unknown_token=False)']),
         # Tests for multiple features
         ([bf.is_aromatic, bf.is_ring], ['is_aromatic', 'is_ring']),
     ])

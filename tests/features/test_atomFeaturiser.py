@@ -54,6 +54,8 @@ class TestAtomFeaturiser(object):
             [[1], [1], [1], [1], [1], [1], [1], [0]]),
         ('[13C]CO', [af.isotope], [[13], [0], [0]]),
         ('[CH2]CO', [af.radical], [[1], [0], [0]]),
+        ('C1CC1[C@H](F)C1CCC1', [af.stereochemistry],
+            [[''], [''], [''], ['S'], [''], [''], [''], [''], ['']]),
         ('CCO', [feat.one_hot(af.symbol, tokens=[' ', 'C', 'O', 'N'])], [
             [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]),
 
@@ -83,7 +85,8 @@ class TestAtomFeaturiser(object):
         ([af.is_aromatic], ['is_aromatic']),
         ([af.is_ringsize(3)], ['is_ringsize(3)']),
         ([feat.one_hot(af.hybridization)],
-            ['one_hot(hybridization, tokens=[SP,SP2,SP3,SP3D,SP3D2])']),
+            ['one_hot(hybridization, tokens=[SP,SP2,SP3,SP3D,SP3D2], ' + \
+                'unknown_token=False)']),
         # Tests for multiple features
         ([af.is_aromatic, af.degree], ['is_aromatic', 'degree']),
     ])

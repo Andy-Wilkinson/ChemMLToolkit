@@ -3,6 +3,7 @@ from rdkit.Chem import Atom
 from rdkit.Chem import AllChem
 from rdkit.Chem import ChiralType
 from rdkit.Chem import HybridizationType
+from rdkit.Chem import rdCIPLabeler
 
 
 def atomic_number(atom: Atom) -> int:
@@ -114,6 +115,18 @@ def radical(atom: Atom) -> int:
     """Number of radical electrons (int).
     """
     return atom.GetNumRadicalElectrons()
+
+
+@tokenizable_feature(['', 'R', 'S'])
+def stereochemistry(atom: Atom) -> str:
+    """CIP sterochemistry label (string).
+    """
+    mol = atom.GetOwningMol()
+    if not mol.HasProp('_CIPLabelsAssigned'):
+        rdCIPLabeler.AssignCIPLabels(mol)
+        mol.SetProp('_CIPLabelsAssigned', '1')
+
+    return atom.GetProp('_CIPCode') if atom.HasProp('_CIPCode') else ''
 
 
 def symbol(atom: Atom) -> str:
