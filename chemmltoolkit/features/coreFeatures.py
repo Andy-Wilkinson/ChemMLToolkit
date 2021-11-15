@@ -1,4 +1,3 @@
-from chemmltoolkit.utils import list_utils
 from chemmltoolkit.features.utils import get_token_name
 
 
