@@ -37,6 +37,8 @@ class TestAtomFeaturiser(object):
         ('CCO', [af.index], [[0], [1], [2]]),
         ('CCO', [af.is_aromatic], [[0], [0], [0]]),
         ('c1ccccc1C', [af.is_aromatic], [[1], [1], [1], [1], [1], [1], [0]]),
+        ('NCCOC', [af.is_hbond_acceptor], [[0], [0], [0], [1], [0]]),
+        ('NCCOC', [af.is_hbond_donor], [[1], [0], [0], [0], [0]]),
         ('C1CC1C', [af.is_ring], [[1], [1], [1], [0]]),
         ('c1ccccc1C', [af.is_ring], [[1], [1], [1], [1], [1], [1], [0]]),
         ('C1CC1C', [af.is_ringsize(3)], [[1], [1], [1], [0]]),

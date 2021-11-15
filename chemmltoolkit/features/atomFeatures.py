@@ -1,9 +1,46 @@
+from os import path
+
+from rdkit.Chem import Mol
 from chemmltoolkit.features.decorators import tokenizable_feature
 from rdkit.Chem import Atom
 from rdkit.Chem import AllChem
 from rdkit.Chem import ChiralType
 from rdkit.Chem import HybridizationType
 from rdkit.Chem import rdCIPLabeler
+
+
+class _ChemicalFeatureGenerator():
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(
+                _ChemicalFeatureGenerator, cls).__new__(cls)
+
+            from rdkit import RDConfig
+            from rdkit.Chem import ChemicalFeatures
+
+            fdef_path = path.join(RDConfig.RDDataDir, 'BaseFeatures.fdef')
+            cls._instance.feature_factory = \
+                ChemicalFeatures.BuildFeatureFactory(fdef_path)
+
+        return cls._instance
+
+    def assign_features(self, mol: Mol):
+        for atom in mol.GetAtoms():
+            atom.SetProp('_Feature_Acceptor', '0')
+            atom.SetProp('_Feature_Donor', '0')
+
+        features = self.feature_factory.GetFeaturesForMol(mol)
+
+        for feature in features:
+            family = feature.GetFamily()
+            for atom_idx in feature.GetAtomIds():
+                atom = mol.GetAtomWithIdx(atom_idx)
+                if family == 'Acceptor':
+                    atom.SetProp('_Feature_Acceptor', '1')
+                elif family == 'Donor':
+                    atom.SetProp('_Feature_Donor', '1')
 
 
 def atomic_number(atom: Atom) -> int:
@@ -85,6 +122,24 @@ def is_aromatic(atom: Atom) -> int:
     """If the atom is aromatic (0 or 1).
     """
     return int(atom.GetIsAromatic())
+
+
+def is_hbond_acceptor(atom: Atom) -> int:
+    """If the atom is a hydrogen bond acceptor (0 or 1).
+    """
+    if not atom.HasProp('_Feature_Acceptor'):
+        mol = atom.GetOwningMol()
+        _ChemicalFeatureGenerator().assign_features(mol)
+    return atom.GetIntProp('_Feature_Acceptor')
+
+
+def is_hbond_donor(atom: Atom) -> int:
+    """If the atom is a hydrogen bond donor (0 or 1).
+    """
+    if not atom.HasProp('_Feature_Donor'):
+        mol = atom.GetOwningMol()
+        _ChemicalFeatureGenerator().assign_features(mol)
+    return atom.GetIntProp('_Feature_Donor')
 
 
 def is_ring(atom: Atom) -> int:
