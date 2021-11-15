@@ -33,7 +33,7 @@ def normalize(feature, mean=None, std=None):
     return _normalize
 
 
-def one_hot(feature, tokens=None):
+def one_hot(feature, tokens=None, unknown_token=False):
     """Wraps a feature to one-hot encode the value
 
     This returns a new feature that first calls the specified feature, then
@@ -45,6 +45,8 @@ def one_hot(feature, tokens=None):
     Args:
         feature: The input feature to one-hot encode.
         tokens: A list of tokens to use for encoding.
+        unknown_token: Whether to include an addition token as the final
+            index to represent unknown values.
 
     Returns:
         The one-hot encoded feature.
@@ -55,14 +57,28 @@ def one_hot(feature, tokens=None):
     feature_name = feature.__name__
     token_names = [get_token_name(token) for token in tokens]
 
-    def _one_hot(input):
-        return list_utils.one_hot(feature(input), tokens)
+    if unknown_token:
+        def _one_hot(input):
+            value = feature(input)
+            if value in tokens:
+                return [int(value == token) for token in tokens] + [0]
+            else:
+                return [0] * len(tokens) + [1]
+    else:
+        def _one_hot(input):
+            value = feature(input)
+            return [int(value == token) for token in tokens]
 
     def _get_feature_keys():
-        return [f'one_hot({feature_name})[{token_name}]'
-                for token_name in token_names]
+        features_keys = [f'one_hot({feature_name})[{token_name}]'
+                         for token_name in token_names]
+        if unknown_token:
+            features_keys.append(f'one_hot({feature_name})[?]')
+        return features_keys
 
     token_name_list = ','.join(token_names)
-    _one_hot.__name__ = f'one_hot({feature_name}, tokens=[{token_name_list}])'
+    _one_hot.__name__ = f'one_hot({feature_name}, ' + \
+                        f'tokens=[{token_name_list}], ' + \
+                        f'unknown_token={unknown_token})'
     _one_hot.get_feature_keys = _get_feature_keys
     return _one_hot

@@ -9,29 +9,55 @@ class TestCoreFeatures(object):
     def test_one_hot(self):
         feature = one_hot(feature_alpha, tokens=['A', 'B', 'C', 'X', 'Y'])
 
+        assert feature(0) == [0, 0, 1, 0, 0]
+        assert feature(1) == [1, 0, 0, 0, 0]
+        assert feature(2) == [0, 0, 0, 1, 0]
         assert feature(3) == [0, 1, 0, 0, 0]
-        assert feature.__name__ == 'one_hot(feature_alpha, tokens=[A,B,C,X,Y])'
+        assert feature(4) == [0, 0, 0, 0, 1]
+        assert feature.__name__ == 'one_hot(feature_alpha, ' + \
+                                   'tokens=[A,B,C,X,Y], ' + \
+                                   'unknown_token=False)'
         assert get_feature_keys(feature) == [
-                'one_hot(feature_alpha)[A]',
-                'one_hot(feature_alpha)[B]',
-                'one_hot(feature_alpha)[C]',
-                'one_hot(feature_alpha)[X]',
-                'one_hot(feature_alpha)[Y]'
-            ]
+            'one_hot(feature_alpha)[A]',
+            'one_hot(feature_alpha)[B]',
+            'one_hot(feature_alpha)[C]',
+            'one_hot(feature_alpha)[X]',
+            'one_hot(feature_alpha)[Y]'
+        ]
+
+    def test_one_hot_unknown(self):
+        feature = one_hot(feature_alpha, tokens=['A', 'B', 'C'],
+                          unknown_token=True)
+
+        assert feature(0) == [0, 0, 1, 0]
+        assert feature(1) == [1, 0, 0, 0]
+        assert feature(2) == [0, 0, 0, 1]
+        assert feature(3) == [0, 1, 0, 0]
+        assert feature(4) == [0, 0, 0, 1]
+        assert feature.__name__ == 'one_hot(feature_alpha, ' + \
+                                   'tokens=[A,B,C], ' + \
+                                   'unknown_token=True)'
+        assert get_feature_keys(feature) == [
+            'one_hot(feature_alpha)[A]',
+            'one_hot(feature_alpha)[B]',
+            'one_hot(feature_alpha)[C]',
+            'one_hot(feature_alpha)[?]'
+        ]
 
     def test_one_hot_tokenizable(self):
         feature = one_hot(feature_alpha_tokenizable)
 
         assert feature(3) == [0, 1, 0, 0, 0]
         assert feature.__name__ == \
-            'one_hot(feature_alpha_tokenizable, tokens=[A,B,C,X,Y])'
+            'one_hot(feature_alpha_tokenizable, tokens=[A,B,C,X,Y], ' + \
+            'unknown_token=False)'
         assert get_feature_keys(feature) == [
-                'one_hot(feature_alpha_tokenizable)[A]',
-                'one_hot(feature_alpha_tokenizable)[B]',
-                'one_hot(feature_alpha_tokenizable)[C]',
-                'one_hot(feature_alpha_tokenizable)[X]',
-                'one_hot(feature_alpha_tokenizable)[Y]'
-            ]
+            'one_hot(feature_alpha_tokenizable)[A]',
+            'one_hot(feature_alpha_tokenizable)[B]',
+            'one_hot(feature_alpha_tokenizable)[C]',
+            'one_hot(feature_alpha_tokenizable)[X]',
+            'one_hot(feature_alpha_tokenizable)[Y]'
+        ]
 
     def test_normalize(self):
         feature = normalize(feature_double, mean=4, std=2)
