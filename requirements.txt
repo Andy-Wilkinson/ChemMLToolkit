@@ -1,6 +1,0 @@
-pandas
-flake8
-pytest
-pytest-cov
-wheel
-twine
