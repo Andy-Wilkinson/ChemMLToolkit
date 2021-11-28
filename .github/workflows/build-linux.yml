@@ -63,3 +63,9 @@ jobs:
       with:
         name: python-package
         path: dist/*
+
+    - name: Upload package to PyPI
+      env:
+        PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        twine upload -u __token__ -p $PYPI_API_TOKEN dist/*
