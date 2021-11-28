@@ -1,0 +1,43 @@
+name: 'Setup Conda'
+description: 'Setup a Python Anaconda environment'
+inputs:
+  python-version:
+    description: 'The Python version to use'
+    required: true
+    default: 3.9
+  environment-file:
+    description: 'The environment.yml file to use to create the environment'
+    required: true
+    default: 'environment.yml'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ inputs.python-version }}
+  
+    - name: Add conda to system path
+      shell: bash
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+        echo "CONDA=$CONDA" >> $GITHUB_ENV
+
+    - name: Cache conda dependencies
+      uses: actions/cache@v2
+      env:
+        cache-name: conda-cache
+      with:
+        path: ${{ env.CONDA }}/pkgs
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles(inputs.environment-file) }}
+        restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+    - name: Install dependencies using mamba
+      shell: bash
+      run: |
+        conda install mamba -n base -c conda-forge
+        mamba env update --file ${{ inputs.environment-file }} --name base
