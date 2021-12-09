@@ -1,0 +1,38 @@
+from __future__ import annotations
+from typing import Callable, Iterator
+from chemmltoolkit.data.pipelines import DataPipeline
+
+
+class IntPipeline(DataPipeline[int]):
+    def __init__(self, iter_fn: Callable[[], Iterator[int]]):
+        super(IntPipeline, self).__init__(iter_fn)
+
+    def sum_values(self) -> int:
+        return sum(self)
+
+    @staticmethod
+    def from_range(start: int, end: int) -> 'IntPipeline':
+        return IntPipeline(lambda: iter(range(start, end)))
+
+
+class TestDataPipeline(object):
+    def test_intpipeline_fromrange(self):
+        pipeline = IntPipeline.from_range(0, 10)
+        assert list(pipeline) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    def test_intpipeline_sum_values(self):
+        pipeline = IntPipeline.from_range(0, 10)
+        assert pipeline.sum_values() == 45
+
+    def test_chain(self):
+        pipeline = IntPipeline.chain([
+            IntPipeline.from_range(0, 3),
+            IntPipeline.from_range(5, 10)])
+
+        assert list(pipeline) == [0, 1, 2, 5, 6, 7, 8, 9]
+        assert pipeline.sum_values() == 38
+
+    def test_filter(self):
+        pipeline = IntPipeline.from_range(0, 10).filter(lambda x: x % 2 == 0)
+        assert list(pipeline) == [0, 2, 4, 6, 8]
+        assert pipeline.sum_values() == 20
