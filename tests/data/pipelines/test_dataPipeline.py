@@ -11,7 +11,7 @@ class IntPipeline(DataPipeline[int]):
         return sum(self)
 
     @staticmethod
-    def from_range(start: int, end: int) -> 'IntPipeline':
+    def from_range(start: int, end: int) -> IntPipeline:
         return IntPipeline(lambda: iter(range(start, end)))
 
 
@@ -36,3 +36,14 @@ class TestDataPipeline(object):
         pipeline = IntPipeline.from_range(0, 10).filter(lambda x: x % 2 == 0)
         assert list(pipeline) == [0, 2, 4, 6, 8]
         assert pipeline.sum_values() == 20
+
+    def test_train_test_split(self):
+        pipeline = IntPipeline.from_range(0, 10)
+
+        train, test = pipeline.train_test_split(test_size=0.2)
+        full_list = sorted(list(train) + list(test))
+
+        assert len(train) == 8
+        assert len(test) == 2
+        assert full_list == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert train.sum_values() + test.sum_values() == 45
