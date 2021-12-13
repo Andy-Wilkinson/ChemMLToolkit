@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable
+from typing import BinaryIO, Iterable, Union
 
 
 class Mol():
@@ -11,12 +11,22 @@ class Mol():
                     onlyExplicit: bool = ...) -> int:
         ...
 
+    def GetProp(self: Mol,
+                property: str) -> str:
+        ...
+
     def HasSubstructMatch(self: Mol,
                           query: Mol,
                           recursionPossible: bool = ...,
                           useChirality: bool = ...,
                           useQueryQueryMatches: bool = ...,
                           ) -> bool:
+        ...
+
+    def SetProp(self: Mol,
+                property: str,
+                value: str,
+                computed: bool = ...) -> None:
         ...
 
 
@@ -28,7 +38,21 @@ class Bond():
         ...
 
 
+class ForwardSDMolSupplier(Iterable[Mol]):
+    def __init__(self: ForwardSDMolSupplier,
+                 fileobj: Union[str, BinaryIO],
+                 sanitize: bool = ...,
+                 removeHs: bool = ...,
+                 strictParsing: bool = ...,
+                 ) -> None:
+        ...
+
+
 class SmilesParserParams():
+    ...
+
+
+class SmilesWriteParams():
     ...
 
 
@@ -49,4 +73,9 @@ def MolFromPDBBlock(molBlock: str,
 
 def MolFromSmiles(smiles: str,
                   params: SmilesParserParams = ...) -> Mol:
+    ...
+
+
+def MolToSmiles(mol: Mol,
+                params: SmilesWriteParams = ...) -> str:
     ...
