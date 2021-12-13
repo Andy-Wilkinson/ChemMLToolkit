@@ -47,3 +47,40 @@ class TestDataPipeline(object):
         assert len(test) == 2
         assert full_list == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         assert train.sum_values() + test.sum_values() == 45
+
+    def test_train_test_split_integer_size(self):
+        pipeline = IntPipeline.from_range(0, 10)
+
+        train, test = pipeline.train_test_split(test_size=2)
+        full_list = sorted(list(train) + list(test))
+
+        assert len(train) == 8
+        assert len(test) == 2
+        assert full_list == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert train.sum_values() + test.sum_values() == 45
+
+    def test_train_test_split_with_validation(self):
+        pipeline = IntPipeline.from_range(0, 10)
+
+        train, val, test = pipeline.train_test_split(test_size=0.3,
+                                                     val_size=0.1)
+        full_list = sorted(list(train) + list(val) + list(test))
+
+        assert len(train) == 6
+        assert len(val) == 1
+        assert len(test) == 3
+        assert full_list == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert train.sum_values() + val.sum_values() + test.sum_values() == 45
+
+    def test_train_test_split_with_validation_integer_size(self):
+        pipeline = IntPipeline.from_range(0, 10)
+
+        train, val, test = pipeline.train_test_split(test_size=3,
+                                                     val_size=1)
+        full_list = sorted(list(train) + list(val) + list(test))
+
+        assert len(train) == 6
+        assert len(val) == 1
+        assert len(test) == 3
+        assert full_list == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert train.sum_values() + val.sum_values() + test.sum_values() == 45
